@@ -11,6 +11,7 @@
   import { clampProportion, defaultCharacterProportions, type CharacterProportions } from '../features/character/model/proportions'
   import { applyBoneLengthScales, defaultBoneLengthScales, type BoneLengthScales } from '../features/character/model/boneLengths'
   import type { LayaCommand } from '../features/laya/model/commands.ts'
+  import type { CharacterDecisionConfig } from '../features/laya/model/characterDecision.ts'
   import { createRandomCharacter, createRandomPose } from '../features/character/model/randomCharacter'
   import { mirrorCharacterPose } from '../features/character/model/poses'
   import ArtworkFeedback from '../features/artwork-feedback/ui/ArtworkFeedback.svelte'
@@ -79,6 +80,12 @@
     else if (command.group === 'proportions') resetProportions()
     else resetBoneLengths()
   }
+
+  function applyLocalCharacterDecision(config: CharacterDecisionConfig) {
+    animationPlaying = false
+    proportions = { ...config.proportions }
+    boneScales = { ...config.boneScales }
+  }
 </script>
 
 <div class="app-shell">
@@ -124,7 +131,7 @@
         />
         <CharacterAnimationControls {pose} playing={animationPlaying} onPoseChange={(value) => pose = value} onPlayingChange={(value) => animationPlaying = value} />
         <ArtworkFeedback kind="character" snapshot={{ pose, proportions, boneScales }} />
-        <CharacterCommandPanel onApply={applyLayaCommand} />
+        <CharacterCommandPanel onApply={applyLayaCommand} onApplyDecision={applyLocalCharacterDecision} />
       </aside>
       <CharacterCanvas {skeleton} {pose} {proportions} {showBones} {showJoints} />
       </main>

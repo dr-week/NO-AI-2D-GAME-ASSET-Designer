@@ -87,6 +87,7 @@ Owner: name
 | 0063 | [Character animation clips and transport](0063-character-animation-clips-and-transport.md) | Complete |
 | 0064 | [Laya integration verification](0064-laya-integration-verification.md) | Complete |
 | 0065 | [Landscape style catalog](0065-landscape-style-catalog.md) | Complete |
+| 0070 | [Local System 1 character decisions](0070-local-system-one-character-decisions.md) | Complete |
 
 Records 0001–0003 predate the numbered handoff format. Their notes are historical; use the
 task queue for current work and this index for completed change records.

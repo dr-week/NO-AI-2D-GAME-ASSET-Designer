@@ -10,7 +10,7 @@ source code is copied into this application.
 |---|---|---|---|---|
 | [SVGator](https://www.svgator.com/) | Visual SVG animator and exporter | Browser editor; exports animated SVG with CSS or JavaScript | Target SVG elements, author property animation, configure playback/export | Product reference for a later visual timeline; not needed to implement first templates |
 | [Anime.js](https://animejs.com/documentation/) | General JS animation engine, including SVG | JavaScript/TypeScript library; targets DOM/SVG and offers timelines, easing, callbacks, playback controls | Timeline is ordered clips with offsets/labels; seek/play/pause/reverse; compose animations | Useful design reference; native WAAPI is enough for the first bounded templates |
-| [Web Animations API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API/Using_the_Web_Animations_API) | Browser playback/control API | Built-in browser API; `Element.animate()` and `Animation` | Keyframes + timing are separate; playback state can be controlled and queried | Best initial playback layer; no added dependency |
+| [Web Animations API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API/Using_the_Web_Animations_API) | Browser playback/control API | Built-in browser API; `Element.animate()` and `Animation` | Keyframes + timing are separate; playback state can be controlled and queried | Use for controlled DOM effects; model-driven character poses currently use `requestAnimationFrame` |
 | [SVG animation](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/animateTransform) | Self-contained declarative SVG motion | SVG `<animate>`, `<animateTransform>` elements | SVG can encode transform and attribute interpolation in the file | Possible simple loop export; validate target browser behavior and export constraints |
 | [Rive](https://rive.app/editor) | Interactive real-time graphics authoring/runtime | Rive editor and `.riv` runtime format | State machines connect named inputs/events to animation states | Reference for future interactive clips; a separate format/runtime is beyond current scope |
 | [Lottie / dotLottie](https://docs.lottiefiles.com/en/runtimes/distributions/js) | Playback of authored vector animation | JSON or `.lottie`, rendered by player runtime | Art/animation asset is distinct from playback host; playback, theme, layout, states | Potential import/playback compatibility later, not a native authoring model |
@@ -40,6 +40,54 @@ source code is copied into this application.
 These concepts do not require an LLM. Templates can be hand-authored data and generated
 variations can use a seed plus bounded numeric ranges.
 
+## Theme and template fundamentals
+
+Keep two meanings separate:
+
+- A **visual theme** is a small set of semantic design tokens: color roles, typography,
+  spacing, shape, and (if needed) motion character. Components consume tokens instead of
+  repeating raw values. CSS custom properties already provide the scoped, reusable token
+  mechanism; do not add a theme framework until the app needs selectable themes.
+- An **animation template** is a versioned recipe for a specific visual purpose. Keep artwork
+  separate. A recipe names eligible stable targets and typed channels, bounded values, timing,
+  easing, loop/trigger behavior, and a reduced-motion outcome. Validate the recipe before
+  playback or import; seeded variation stays inside declared bounds.
+
+Use one flow: template data → validation → target binding → playback/export adapter. Preview
+and export must interpret the same recipe. Do not store executable CSS or script in projects.
+For this app, keep `animation/themeEngine.ts` as the existing canonical motion owner for now;
+it currently owns motion presets and duration variants, not the visual theme tokens. Add typed
+easing or per-target timing only when a template needs them, and keep the simple CSS loop path
+for simple loops.
+
+Start with a small purpose-led set: idle (breathe/float), entrance (fade/rise), emphasis
+(brief pulse), and directional transition. Keep direction and distance modest, duration tied
+to travel and emphasis, and easing consistent by motion purpose. Treat reduced motion as an
+explicit alternate outcome, not an afterthought. The image preview already disables motion
+for `prefers-reduced-motion`; keep exported/runtime behavior aligned as animation support
+grows.
+
+This follows design-system token practice (one semantic source for repeated visual values),
+Material's informative/focused motion and duration/easing guidance, and browser guidance to
+prefer CSS for simple effects, animate efficient properties, and honor reduced-motion
+preferences. Sources: [USWDS design tokens](https://designsystem.digital.gov/design-tokens/),
+[MDN CSS custom properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascading_variables/Using_custom_properties),
+[Material motion principles](https://m2.material.io/design/motion/understanding-motion/),
+[Material duration and easing](https://m1.material.io/motion/duration-easing.html),
+[MDN CSS animation performance](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Animation_performance_and_frame_rate),
+[MDN reduced motion](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/%40media/prefers-reduced-motion),
+and [MDN Web Animations API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API/Using_the_Web_Animations_API).
+
+## Reference fit
+
+- `profile.svg`: rotate a form, animate its corner radius, and fade a separate detail group.
+  Current presets cover rotation and opacity; `rx` needs a typed shape track.
+- `approach.svg`: combine a floating illustration with five timed text cards and a progress
+  marker. Current presets cover float and text entrance; per-target delays and slide timing
+  need a small sequenced clip model.
+- Keep artwork grouped by target. Add only typed SVG properties and timing fields; never
+  execute CSS or scripts loaded from project files.
+
 ## Proposed 2D Maker architecture
 
 Keep the app-owned model small and specific to needed features:
@@ -48,7 +96,7 @@ Keep the app-owned model small and specific to needed features:
 Artwork (SVG groups / raster layers)
   └── Rig (stable target IDs, parent, pivot, allowed channels/ranges)
         └── Clip (tracks, keyframes, timing, easing, loop)
-              └── Playback adapter (WAAPI now; other renderer only if justified)
+              └── Playback (CSS for simple loops; rAF for model-driven poses; WAAPI if DOM controls need it)
 ```
 
 - `character/` owns the skeleton and joint constraints.
@@ -65,25 +113,38 @@ Artwork (SVG groups / raster layers)
   allowed channels, default ranges, timing, easing, and loop behavior. User variation
   stays within those bounds.
 
+## Character rig foundation
+
+- Keep bone lengths and joint positions in the skeleton model; render body shapes from the
+  resolved joints. Scaling a parent bone moves its descendants through the existing hierarchy.
+- Use native SVG groups and explicit joint pivots when animated art parts are introduced.
+  SVG transforms apply within nested coordinate systems; make pivots explicit instead of
+  relying on implicit CSS transform origins.
+- Defer mesh-weight deformation. It adds influence regions and subdivision controls that
+  simple connected shapes do not need. See [SVG transforms](https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorials/SVG_from_scratch/Basic_transformations),
+  [SVG transform origins](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Attribute/transform-origin),
+  and [Synfig skeleton deformation](https://wiki.synfig.org/Skeleton_Deformation_Layer) for
+  the distinction between hierarchy and weighted deformation.
+
 ## Implementation path
 
-### 1. Foundation: clips on current SVG
+### 1. Foundation: bounded clips
 
-- Align existing `AnimationTemplate`/`AnimationVariant` types with what can actually be
-  rendered. Current recipes are data only; do not label them playable yet.
-- Add stable SVG target IDs and explicit pivots for the first character parts.
-- Implement only transform/opacity tracks first. Reject missing targets, unsupported
-  channels, non-finite values, and values outside the rig/template bounds.
-- Use Web Animations API for preview control; retain CSS for existing simple image loops.
-- Add a small template picker with a handful of hand-authored clips (breathe, sway, wave,
-  bounce). Keep seeded variations optional and repeatable.
+- Image/text recipes currently drive CSS motion; the character Wave clip uses typed joint
+  keyframes, bounded sampling, and requestAnimationFrame playback/scrubbing.
+- Keep those owners separate until a shared clip contract has more than one real caller.
+- Validate joint limits and keyframe positions. Add target IDs/pivots only when character
+  parts animate independently.
+- Add other hand-authored clips only after the Wave flow is verified and prioritized.
 
 ### 2. Save and export
 
-- Store project artwork references, rig, clips, and version in JSON; validate on load.
-- Add pause/seek/reset before building a timeline UI.
-- Export still SVG first. Add self-contained animated SVG only for supported tracks and
-  test the exported file independently in supported browsers.
+- Store character clips with artwork references, rig, and version in JSON when character
+  project files are implemented; validate on load.
+- Wave already supports play, pause, and scrubbing. Add a timeline only after multiple clips
+  and persisted timing become user requirements.
+- Character still SVG and image/text animated SVG export exist. Add self-contained character
+  animation export only for supported tracks and test independently in target browsers.
 - If offline frame rendering or video export arrives, evaluate fixed-time sampling and
   PNG sequence before adding a rendering dependency.
 
@@ -110,14 +171,17 @@ Artwork (SVG groups / raster layers)
 
 ## Documentation read
 
-- Existing product and implementation docs: `docs/requirements.md`, `docs/design.md`,
-  `docs/workflows/layered-illustration-animation.md`, `docs/ui-ux/04-animation/script.md`,
-  `docs/ui-ux/06-image-animation/script.md`, `research/animation-sdk-scan.md`.
+- Current implementation and adoption triggers: `docs/status.md`,
+  `docs/roadmap/technology-register.md`. Product boundaries: `docs/requirements.md`,
+  `docs/design.md`, and the image/animation UI scripts.
 - Upstream references: Anime.js Timeline and playback docs; MDN Web Animations API, SVG
   `animateTransform`, and transform-origin docs; SVGator export help; Rive editor overview;
   dotLottie JS player docs; Inochi2D overview; Iki README; Synfig artwork import docs.
 
 ## References
+
+- [MDN SVG transform-origin](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Attribute/transform-origin) documents native transform pivots. [OpenToonz Plastic docs](https://opentoonz.readthedocs.io/en/latest/create_animations_using_plastic_tool.html) describe deformable rigs; community reports point to added complexity and occasional performance cost ([OpenToonz issue #2248](https://github.com/opentoonz/opentoonz/issues/2248), [Reddit rigging discussion](https://www.reddit.com/r/2DAnimation/comments/1gvfto1/)).
+- Product implication: keep our first character editor on deterministic SVG geometry and rigid joints; defer deformation/mesh rigs until demonstrated need. Exporting current SVG enables use in other tools while project format and animation remain unfinished.
 
 - [Anime.js timeline](https://animejs.com/documentation/timeline/) · [timeline controls](https://animejs.com/documentation/timeline/timeline-methods/)
 - [MDN Web Animations API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API/Using_the_Web_Animations_API) · [Animation interface](https://developer.mozilla.org/en-US/docs/Web/API/Animation)

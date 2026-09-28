@@ -7,8 +7,8 @@ overwrite active work. Guidance stays flexible when a task needs a different app
 
 - Read `README.md`, `docs/requirements.md`, `docs/design.md`, and relevant feature docs.
 - Search for existing types, helpers, and behavior before adding another version.
-- Add a numbered record in [`docs/contributions/`](contributions/README.md). List exact
-  files and mark overlapping files as claimed while work is active.
+- Run `node scripts/new-contribution.mjs "Short title"` to create and index a numbered record.
+  Allocation is serialized; replace its file placeholder with exact paths and mark overlapping files as claimed.
 
 ## 2. While editing
 
@@ -20,9 +20,11 @@ overwrite active work. Guidance stays flexible when a task needs a different app
 
 ## 3. Finish
 
-- Run `npm run check` and `npm run build` for code changes when practical. Record results.
+- Run `npm run verify` for code changes. Record results and any failure in the contribution record.
 - Mark record complete; list remaining limits and exact files changed.
 - Do not claim performance or browser coverage without measurements.
 
 Local user data stays local unless product scope changes. No empty folders, contributor-name
 folders, duplicate logic, or mandatory approval gates.
+
+Repository workflow skill: [`skills/2dmaker-development/SKILL.md`](../skills/2dmaker-development/SKILL.md).

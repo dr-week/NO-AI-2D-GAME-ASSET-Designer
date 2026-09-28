@@ -2,18 +2,22 @@
   import { fitSkeleton, resolveSkeleton } from '../model/geometry'
   import type { JointId, Skeleton } from '../model/skeleton'
   import type { CharacterProportions } from '../model/proportions'
+  import { downloadCharacterSvg } from '../io/exportSvg'
+  import Icon from '../../../lib/Icon.svelte'
 
   type Props = { skeleton: Skeleton; pose: Partial<Record<JointId, number>>; proportions: CharacterProportions; showBones: boolean; showJoints: boolean }
   let { skeleton, pose, proportions, showBones, showJoints }: Props = $props()
+  let svgElement: SVGSVGElement
   let resolved = $derived(resolveSkeleton(skeleton, pose))
   let fit = $derived(fitSkeleton(resolved, { width: 1080, height: 1920 }))
   let jointIds = $derived(Object.keys(skeleton.joints) as JointId[])
+  let poseLabel = $derived(Object.values(pose).every((angle) => Math.abs(angle ?? 0) < 0.001) ? 'T-pose' : 'Custom pose')
 </script>
 
 <section class="canvas-panel" aria-label="Character preview">
   <div class="canvas" role="group" aria-label="Transparent character canvas">
-    <svg viewBox="0 0 1080 1920" role="img" aria-labelledby="canvas-title">
-      <title id="canvas-title">T-pose front view character on a transparent portrait canvas</title>
+    <svg bind:this={svgElement} viewBox="0 0 1080 1920" role="img" aria-labelledby="canvas-title">
+      <title id="canvas-title">{poseLabel} front view character on a transparent portrait canvas</title>
       <g transform={`translate(${fit.x} ${fit.y}) scale(${fit.scale})`}>
         <g class="body" aria-hidden="true">
           <line class="torso" stroke-width={170 * proportions.torso} x1={resolved.pelvis.x} y1={resolved.pelvis.y} x2={resolved.spine.x} y2={resolved.spine.y} />
@@ -53,31 +57,34 @@
       </g>
     </svg>
   </div>
-  <div class="canvas-caption"><strong>T-pose · Front view</strong><span>1080 × 1920 px</span></div>
+  <div class="canvas-caption"><strong><Icon name="character" size={16} /> Front · {poseLabel}</strong><span>1080 × 1920</span><button type="button" onclick={() => downloadCharacterSvg(svgElement)}><Icon name="export" size={16} />SVG</button></div>
 </section>
 
 <style lang="scss">
-  .canvas-panel { display: grid; justify-items: center; gap: 12px; min-width: 0; }
+  .canvas-panel { display: grid; justify-items: center; gap: 10px; min-width: 0; }
   .canvas {
-    display: grid; place-items: center; width: 100%; min-height: 0; padding: 18px;
-    background-color: #fff;
-    background-image: conic-gradient(#e9edf3 25%, transparent 0 50%, #e9edf3 0 75%, transparent 0);
-    background-size: 20px 20px;
-    border: 1px solid var(--border); border-radius: 8px;
-    svg { display: block; width: min(100%, 420px); max-height: 72svh; aspect-ratio: 9 / 16; overflow: visible; }
+    display: grid; place-items: center; width: 100%; min-height: 0; padding: 22px;
+    background-color: var(--surface-raised);
+    background-image: conic-gradient(#e6e1d7 25%, transparent 0 50%, #e6e1d7 0 75%, transparent 0);
+    background-size: 18px 18px;
+    border: 1px solid var(--border); border-radius: 15px; box-shadow: var(--shadow);
+    svg { display: block; width: min(100%, 390px); max-height: 72svh; aspect-ratio: 9 / 16; overflow: visible; }
   }
-  .body { fill: none; stroke: #5269c9; stroke-linecap: round; stroke-linejoin: round; }
+  .body { fill: none; stroke: var(--moss); stroke-linecap: round; stroke-linejoin: round; }
   .torso { stroke: #efc7a8; }
   .neck { stroke: #efc7a8; }
   .pelvis { stroke: #59657d; }
   .upper-limb { stroke: #efc7a8; }
   .lower-limb { stroke: #efc7a8; }
-  .leg { stroke: #5269c9; }
-  .head { fill: #efc7a8; stroke: #5269c9; stroke-width: 9; }
-  .hand, .foot { fill: #efc7a8; stroke: #5269c9; stroke-width: 8; }
-  .foot { fill: #46516a; }
-  .bones { fill: none; stroke: #f08b69; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+  .leg { stroke: var(--moss); }
+  .head { fill: #efc7a8; stroke: var(--moss); stroke-width: 9; }
+  .hand, .foot { fill: #efc7a8; stroke: var(--moss); stroke-width: 8; }
+  .foot { fill: var(--text); }
+  .bones { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
   .joints { fill: #fff; stroke: var(--accent); stroke-width: 6; }
-  .canvas-caption { display: flex; justify-content: space-between; gap: 16px; width: 100%; color: var(--muted); font-size: 0.8125rem; }
+  .canvas-caption { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; color: var(--muted); font-size: 0.75rem; }
+  .canvas-caption strong { display: inline-flex; align-items: center; gap: 7px; }
   .canvas-caption strong { color: var(--text); }
+  .canvas-caption button { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--accent); font: inherit; font-size: .8rem; cursor: pointer; }
+  .canvas-caption button:hover { border-color: var(--accent); background: var(--accent-soft); }
 </style>

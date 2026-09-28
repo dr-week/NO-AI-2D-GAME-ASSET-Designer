@@ -6,19 +6,20 @@ the narrower SDK/dependency decision record.
 
 ## Decision
 
-Start with SVG + WAAPI for T-pose joints and simple motion. Keep themes, recipes,
-and character files app-owned. Use vendor libraries through adapters only; never
-modify upstream code. No LLM is needed for deterministic animation.
+Keep character geometry and clip data app-owned. Current character poses use SVG geometry
+sampled by the app; CSS handles simple image loops. Use WAAPI for DOM effects only when its
+playback controls are needed. No LLM or animation dependency is required today.
 
 | Tool | Fit | Decision | License |
 |---|---|---|---|
-| [WAAPI](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API) | Joint transforms, timing, loops | Use first; native browser API | Browser |
+| [WAAPI](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API) | DOM-targeted timing and playback controls | Consider for controlled DOM effects | Browser |
 | [Anime.js](https://animejs.com/documentation/svg/) | SVG morphing, paths, timelines | Optional adapter when needed | MIT |
 | [Iki](https://github.com/zeikar/iki) | WebGL2 puppet mesh/physics | Revisit after SVG prototype | MIT |
 | [Inochi2D](https://github.com/Inochi2D/inochi2d) | Mesh puppet runtime | Defer; greater integration cost | BSD-2-Clause |
 | [dotLottie](https://github.com/LottieFiles/dotlottie-web) | Authored animation playback | Optional import/playback only | MIT |
 
-CSS is for interface motion. SVG/WAAPI suits simple 2D animation. Mesh rigs suit
+CSS suits simple image loops and interface motion. SVG/rAF suits model-driven 2D poses;
+WAAPI suits controllable DOM effects. Mesh rigs suit
 deformation. Lottie suits playback. Target CPU-friendly SVG first; WebGL2 is not
 available on every CPU/browser combination.
 
@@ -27,16 +28,16 @@ available on every CPU/browser combination.
 - Stable app-owned types: `AnimationTheme`, `AnimationRecipe`, character/joint IDs.
 - Optional adapter contract: load, play, pause, seek, dispose.
 - Pin SDK versions; verify adapters when upgrading. Vendor code stays untouched.
-- Snapshots in `vendor/` are shallow inspection clones, ignored by Git, not bundled.
+- Revisions below are research references only; no vendor snapshots are stored in this repository.
 
-## Snapshots
+## Reference revisions
 
-| Folder | Repository | Commit |
-|---|---|---|
-| `vendor/animejs` | [juliangarnier/anime](https://github.com/juliangarnier/anime) | `01b81be1` |
-| `vendor/iki` | [zeikar/iki](https://github.com/zeikar/iki) | `2f4a9e41` |
-| `vendor/inochi2d` | [Inochi2D/inochi2d](https://github.com/Inochi2D/inochi2d) | `ba2b1413` |
-| `vendor/dotlottie-web` | [LottieFiles/dotlottie-web](https://github.com/LottieFiles/dotlottie-web) | `a08deda3` |
+| Repository | Commit reviewed |
+|---|---|
+| [juliangarnier/anime](https://github.com/juliangarnier/anime) | `01b81be1` |
+| [zeikar/iki](https://github.com/zeikar/iki) | `2f4a9e41` |
+| [Inochi2D/inochi2d](https://github.com/Inochi2D/inochi2d) | `ba2b1413` |
+| [LottieFiles/dotlottie-web](https://github.com/LottieFiles/dotlottie-web) | `a08deda3` |
 
 ## Papers
 

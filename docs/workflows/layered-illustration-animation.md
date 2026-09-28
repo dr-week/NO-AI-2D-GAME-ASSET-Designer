@@ -70,59 +70,29 @@ remain raster or a small set of edited paths; they are not useful SVG pattern ti
    water or hills by moving a small fixed set of Bézier control points periodically;
    drift clouds, pulse stars, or bob a boat/balloon with simple loops. No fluid solver.
 
-## Proposed technologies
+## Technology
 
-- Existing app: Svelte 5, TypeScript, SCSS, Vite, SVG.
-- Native Canvas 2D `getImageData` for image pixels; seed-based color tolerance and
-  connected-region selection for the first segmentation prototype.
-- SVG `<path>` for editable silhouettes and curves; keep source raster for texture.
-- Web Animations API for layer transforms. `requestAnimationFrame` with elapsed-time
-  math for procedural wave control points and fixed-time export evaluation.
-- No model, server, or new dependency for the first implementation. Consider OpenCV.js
-  for contour extraction/point simplification only after a quality and bundle-size trial.
-- Repeating flat motifs: SVG `<pattern>` and `<path>`; CSS/SVG transforms for tile
-  translation or rotation. Add no pattern library.
-- Use a Web Worker only if profiling shows segmentation blocks the interface.
-
-## Lean technology and fallback choices
-
-| Need | Primary | Fallback |
-|---|---|---|
-| Existing loop presets | CSS keyframes on SVG transforms | Keep the artwork still if motion is disabled or unsupported |
-| Later controlled playback/seek | Native Web Animations API | Keep CSS preset playback; no polyfill by default |
-| Local feedback records | localStorage (current small prototype) | Download JSONL; move to IndexedDB if log size or sync cost warrants it |
-| Separate feedback file | User-selected folder through File System Access | Download JSONL; picker requires secure context, user action, and browser support |
-| Repeated vector motif | SVG `<pattern>` | Repeat one raster tile as CSS/SVG image |
-
-Prefer established browser APIs over “newest” experimental APIs when they do not solve
-a measured problem. IndexedDB is the planned asynchronous upgrade if the small localStorage
-log hits quota or latency limits; do not add it preemptively. File System Access folder picking is limited in browser availability;
-it must not be required for rating or exporting feedback. Local browser storage is best-effort,
-so users need the JSONL download as a durable copy. Keep records bounded, avoid uploading
-feedback, and do not imply ratings train the application automatically.
-
-For normal motion, animate only what the scene needs. `transform` and `opacity` often avoid
-layout and paint work, but SVG complexity and layer promotion still need profiling. Keep the
-current small CSS preset set; adopt WAAPI when pause, seek, or runtime composition becomes
-necessary. No animation dependency is justified yet.
+Current choices and adoption triggers are maintained in the [technology register](../roadmap/technology-register.md).
+Today, Canvas creates bounded masks through a feature-detected Worker/`OffscreenCanvas` path
+with a synchronous fallback; CSS/SVG plays shared presets; `localStorage` holds
+feedback with optional folder append and JSONL download. Folder access is optional, browser
+storage is best-effort, and ratings do not train the application.
 
 ## Limits and performance
 
 Flat, high-contrast regions are easiest. Gradients, antialiasing, thin outlines, and
 texture create fragmented masks; use guided correction or retain them as raster. A
-single image cannot supply occluded pixels. Avoid per-pixel work during playback:
-segment once, cache masks/paths, animate only a few transforms or curve points, and
-measure memory and frame time on representative image sizes. Respect reduced motion.
+single image cannot supply occluded pixels. Segment once, cache masks/paths, animate a
+few transforms or curve points, and measure memory/frame time on representative images.
+Respect reduced motion.
 
 CSS animation of SVG path `d` is not broadly available, so do not make it the core
 path-editing mechanism. Keep path geometry as control-point data and compute the SVG
 path string from that data during preview.
 
-For this style, "Material Design" should mean inspiration from Material motion principles
-(clear state change, restrained duration, consistent easing), not importing Material's
-web UI components. Material 3 documents a motion system and decorative shape library;
-those are design-system resources, not a scene editor or general animation engine. Keep
-art motion in native SVG/CSS/WAAPI and measure paint, frame time, memory, and bundle cost.
+For this style, Material Design means restrained duration, clear state changes, and
+consistent easing. It is motion guidance, not a scene-animation engine. Keep art motion in
+SVG/CSS/WAAPI and measure paint, frame time, memory, and bundle cost.
 
 ## Reference material
 
@@ -138,7 +108,5 @@ art motion in native SVG/CSS/WAAPI and measure paint, frame time, memory, and bu
 - [IndexedDB API](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
 - [Storage quotas and eviction](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria)
 - [Directory picker compatibility and security](https://developer.mozilla.org/en-US/docs/Web/API/Window/showDirectoryPicker)
-- [Web Animations API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API/Using_the_Web_Animations_API)
 - [High-performance CSS animations](https://web.dev/articles/animations-guide)
-- [Animation performance and rendering](https://web.dev/articles/animations-overview)
 - [SVG path `d` CSS support](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/d)

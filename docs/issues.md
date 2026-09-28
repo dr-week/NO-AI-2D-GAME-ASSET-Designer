@@ -1,13 +1,14 @@
 # Issues
 
 Only unresolved risks and questions. Feature scope lives in requirements.md.
+GitHub state checked 2026-09-28: issues #1–#5 remain open.
 
 | ID | Status | Issue | Close when |
 |---|---|---|---|
-| [I-001](https://github.com/dr-week/NO-AI-2D-GAME-ASSET-Designer/issues/1) | Open | Laya request mapping is unimplemented; browser runtime and command accuracy are unverified. | Choose an implementation and measure memory, latency, and validated character-command accuracy in supported browsers. |
+| [I-001](https://github.com/dr-week/NO-AI-2D-GAME-ASSET-Designer/issues/1) | Open | Bounded local Laya commands work; the nine-question result resolver has fixture tests but no production caller or inference provider. Target-device performance and decision quality are unmeasured. | Integrate a non-LLM provider only after choosing target hardware; measure decision quality, latency, and memory, and retain deterministic controls as fallback. |
 | [I-002](https://github.com/dr-week/NO-AI-2D-GAME-ASSET-Designer/issues/2) | Open | Minimum supported hardware and smoothness target are undefined. | Define a representative sample and smoothness threshold; verify rendering and editing on a low-end CPU/browser. |
 | [I-003](https://github.com/dr-week/NO-AI-2D-GAME-ASSET-Designer/issues/3) | Open | Character joint deformation quality is unverified; clothing deformation is future scope. | Exercise shoulder, elbow, hip, and knee limits; record whether connected shapes show unacceptable gaps or overlaps. |
-| [I-004](https://github.com/dr-week/NO-AI-2D-GAME-ASSET-Designer/issues/4) | Open | Color-mask quality and memory use have no documented measurements; wave motion remains future scope. | Measure color masks on flat, gradient, and textured references at target sizes; define memory limits and record results. |
+| [I-004](https://github.com/dr-week/NO-AI-2D-GAME-ASSET-Designer/issues/4) | Open | Color-mask quality, peak runtime memory, and worker compatibility lack measurements; image-path wave motion remains future scope. | Measure masks on flat, gradient, and textured references at target sizes; verify worker and fallback browsers; define memory limits and record results. |
 | [I-005](https://github.com/dr-week/NO-AI-2D-GAME-ASSET-Designer/issues/5) | Open | Feedback folder writes depend on browser File System Access support; compatibility has not been verified. | Verify folder writes in supported browsers and confirm browser-storage and download fallbacks work. |
 
 ## Maintenance

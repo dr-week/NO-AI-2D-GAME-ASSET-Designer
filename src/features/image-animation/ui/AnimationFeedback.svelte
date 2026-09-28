@@ -1,5 +1,16 @@
 <script lang="ts">
+  import { downloadBlob } from '../../../platform/download'
   import type { Layer, Motion, FeedbackEntry } from '../model/types'
+  import { createFeedbackEntry } from '../model/feedback'
+  import {
+    appendFeedbackEntry,
+    chooseFeedbackDirectory,
+    feedbackFileName,
+    loadFeedbackEntries,
+    saveFeedbackEntries,
+    serializeFeedbackLog,
+    type FeedbackDirectory,
+  } from '../io/feedbackStore'
 
   type Props = {
     imageName: string
@@ -7,26 +18,12 @@
     layers: Layer[]
     onRandomAnimation: () => void
   }
-  type FeedbackFile = { getFile(): Promise<{ text(): Promise<string> }>; createWritable(): Promise<{ write(data: string): Promise<void>; close(): Promise<void> }> }
-  type FeedbackDirectory = { getFileHandle(name: string, options: { create: boolean }): Promise<FeedbackFile> }
-  type WindowWithDirectoryPicker = Window & { showDirectoryPicker?: () => Promise<FeedbackDirectory> }
-
   let { imageName, backgroundMotion, layers, onRandomAnimation }: Props = $props()
-  const storageKey = '2dmaker-animation-feedback-v1'
-  const logFileName = '2dmaker-animation-feedback.jsonl'
-  const motionChoices: Motion[] = ['float', 'drift', 'pulse']
-  let entries = $state(loadEntries())
+  let entries = $state(loadFeedbackEntries())
   let status = $state('Feedback stays in this browser until you choose a folder or download it.')
   let trialId = $state('')
   let ratedTrial = $state(false)
   let directory: FeedbackDirectory | null = null
-
-  function loadEntries(): FeedbackEntry[] {
-    try {
-      const value: unknown = JSON.parse(localStorage.getItem(storageKey) ?? '[]')
-      return Array.isArray(value) ? value as FeedbackEntry[] : []
-    } catch { return [] }
-  }
 
   function randomAnimation() {
     onRandomAnimation()
@@ -37,10 +34,9 @@
 
   async function chooseFolder() {
     try {
-      const picker = (window as WindowWithDirectoryPicker).showDirectoryPicker
-      if (!picker) { status = 'Folder access is unavailable. Download the log instead.'; return }
-      directory = await picker.call(window)
-      status = `Future ratings will be saved to ${logFileName} in the chosen folder.`
+      directory = await chooseFeedbackDirectory()
+      if (!directory) { status = 'Folder access is unavailable. Download the log instead.'; return }
+      status = `Future ratings will be saved to ${feedbackFileName} in the chosen folder.`
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return
       status = 'Could not open folder. Feedback remains stored in this browser.'
@@ -48,42 +44,36 @@
   }
 
   function downloadLog() {
-    const text = entries.map((entry) => JSON.stringify(entry)).join('\n')
-    const url = URL.createObjectURL(new Blob([text ? `${text}\n` : ''], { type: 'application/x-ndjson' }))
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = logFileName
-    anchor.click()
-    URL.revokeObjectURL(url)
+    downloadBlob(new Blob([serializeFeedbackLog(entries)], { type: 'application/x-ndjson' }), feedbackFileName)
   }
 
   async function rateTrial(rating: FeedbackEntry['rating']) {
     if (!trialId || ratedTrial) return
-    const entry: FeedbackEntry = {
+    const entry = createFeedbackEntry({
       id: trialId,
       createdAt: new Date().toISOString(),
       rating,
       image: imageName,
       backgroundMotion,
-      layers: layers.map(({ name, motion, duration }) => ({ name, motion, duration })),
-    }
+      layers,
+    })
     entries = [...entries, entry].slice(-5000)
     ratedTrial = true
-    try { localStorage.setItem(storageKey, JSON.stringify(entries)) }
-    catch { status = 'Browser storage is full; use a feedback folder or download the log.' }
+    let savedLocally = true
+    savedLocally = saveFeedbackEntries(entries)
     if (!directory) {
-      status = 'Rating saved in this browser. Choose a feedback folder or download the log.'
+      status = savedLocally
+        ? 'Rating saved in this browser. Choose a feedback folder or download the log.'
+        : 'Browser storage failed. Rating is available to download in this session.'
       return
     }
     try {
-      const file = await directory.getFileHandle(logFileName, { create: true })
-      const previous = await (await file.getFile()).text()
-      const writer = await file.createWritable()
-      await writer.write(`${previous}${previous && !previous.endsWith('\n') ? '\n' : ''}${JSON.stringify(entry)}\n`)
-      await writer.close()
-      status = `Rating saved to ${logFileName}.`
+      await appendFeedbackEntry(directory, entry)
+      status = `Rating saved to ${feedbackFileName}.`
     } catch {
-      status = 'Folder write failed. Rating remains in the browser; download the log as backup.'
+      status = savedLocally
+        ? 'Folder write failed. Rating remains in the browser; download the log as backup.'
+        : 'Folder and browser storage failed. Rating is available to download in this session.'
     }
   }
 </script>

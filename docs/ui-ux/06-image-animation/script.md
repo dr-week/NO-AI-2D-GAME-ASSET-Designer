@@ -1,12 +1,12 @@
 # UI-06 · Layered illustration animation
 
-Status: polygon/color masks, native text layers, basic motion, bounded templates, randomized animation trials,
+Status: polygon/color masks, native text layers, basic motion, theme-filtered templates, randomized animation trials,
 local like/dislike feedback, project JSON, browser save/restore, and animated SVG export
 implemented; editable paths, pattern-tile authoring, and wave motion planned. See
 [workflow](../../workflows/layered-illustration-animation.md).
 
 ## Purpose
-Import simple artwork, separate useful regions into layers, then preview lightweight motion.
+Import simple artwork, separate useful regions into layers, then preview lightweight motion. The workspace is labeled Animation in navigation.
 
 ## Controls
 Local image picker, polygon/color selection mode, color tolerance, text overlay content,

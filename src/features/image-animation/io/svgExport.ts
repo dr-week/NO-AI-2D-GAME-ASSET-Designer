@@ -1,6 +1,7 @@
-import { motionDefinitions } from '../../animation/themeEngine'
+import { backgroundMotionDuration, motionDefinitions } from '../../animation/themeEngine'
 import type { Motion } from '../model/types'
 import type { ImageProject } from './projectFile'
+import { downloadBlob } from '../../../platform/download'
 
 const svgNs = 'http://www.w3.org/2000/svg'
 
@@ -53,13 +54,13 @@ export function exportAnimatedSvg(project: ImageProject): void {
   }
 
   const background = document.createElementNS(svgNs, 'g')
-  addMotion(background, backgroundMotion, 5)
+  addMotion(background, backgroundMotion, backgroundMotionDuration)
   background.append(makeImage(imageDataUrl))
   svg.append(background)
 
   for (const layer of layers) {
-    const pivotX = layer.kind === 'text' ? layer.x ?? width / 2 : layer.maskUrl || !layer.points.length ? width / 2 : (Math.min(...layer.points.map(({ x }) => x)) + Math.max(...layer.points.map(({ x }) => x))) / 2
-    const pivotY = layer.kind === 'text' ? layer.y ?? height / 2 : layer.maskUrl || !layer.points.length ? height / 2 : (Math.min(...layer.points.map(({ y }) => y)) + Math.max(...layer.points.map(({ y }) => y))) / 2
+    const pivotX = layer.kind === 'text' ? layer.x : layer.maskUrl ? width / 2 : (Math.min(...layer.points.map(({ x }) => x)) + Math.max(...layer.points.map(({ x }) => x))) / 2
+    const pivotY = layer.kind === 'text' ? layer.y : layer.maskUrl ? height / 2 : (Math.min(...layer.points.map(({ y }) => y)) + Math.max(...layer.points.map(({ y }) => y))) / 2
     const pivot = document.createElementNS(svgNs, 'g')
     pivot.setAttribute('transform', `translate(${pivotX} ${pivotY})`)
     const animated = document.createElementNS(svgNs, 'g')
@@ -70,9 +71,9 @@ export function exportAnimatedSvg(project: ImageProject): void {
       text.setAttribute('text-anchor', 'middle')
       text.setAttribute('dominant-baseline', 'middle')
       text.setAttribute('font-family', 'system-ui, sans-serif')
-      text.setAttribute('font-size', String(layer.fontSize ?? 64))
-      text.setAttribute('fill', layer.fill ?? '#283247')
-      text.textContent = layer.text ?? ''
+      text.setAttribute('font-size', String(layer.fontSize))
+      text.setAttribute('fill', layer.fill)
+      text.textContent = layer.text
       animated.append(text)
     } else {
       const reference = `${layer.maskUrl ? 'mask' : 'clip'}-${layer.id}`
@@ -102,10 +103,5 @@ export function exportAnimatedSvg(project: ImageProject): void {
     svg.append(pivot)
   }
 
-  const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' }))
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = '2dmaker-animation.svg'
-  anchor.click()
-  URL.revokeObjectURL(url)
+  downloadBlob(new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' }), '2dmaker-animation.svg')
 }

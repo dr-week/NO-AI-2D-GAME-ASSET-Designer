@@ -2,20 +2,30 @@ import type { MotionPreset } from '../../animation/themeEngine'
 
 export type Motion = MotionPreset
 export type Point = { x: number; y: number }
-export type Layer = {
+type LayerBase = {
   id: string
   name: string
-  points: Point[]
-  maskUrl: string
   motion: Motion
   duration: number
-  kind?: 'image' | 'text'
-  text?: string
-  x?: number
-  y?: number
-  fontSize?: number
-  fill?: string
 }
+
+export type ImageLayer = LayerBase & {
+  kind: 'image'
+  points: Point[]
+  maskUrl: string
+}
+
+export type TextLayer = LayerBase & {
+  kind: 'text'
+  text: string
+  x: number
+  y: number
+  fontSize: number
+  fill: string
+}
+
+export type Layer = ImageLayer | TextLayer
+
 export type FeedbackEntry = {
   id: string
   createdAt: string

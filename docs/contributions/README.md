@@ -5,7 +5,7 @@ One numbered file per nontrivial change. This is the handoff index, not a second
 ## Workflow
 
 1. Copy the next number; add a log before editing.
-2. List exact paths. Mark shared paths `claimed` while active; agree before overlap.
+2. List exact paths with `[claimed]` or `[done]`. Agree before overlapping claimed files.
 3. Update the record when files/status/checks change.
 4. Mark `complete` at handoff. Keep old records as history.
 
@@ -35,3 +35,5 @@ Owner: name
 | 0002 | [Animation system research](../tasks/2026-09-28-animation-systems-research.md) | Complete |
 | 0003 | [Image templates and project flow](../tasks/2026-09-28-ui-animation-project-integration.md) | Complete |
 | 0004 | [Basic motion and text layers](0004-basic-motion-text.md) | Complete |
+| 0005 | [Character proportions](0005-character-proportions.md) | Complete |
+| 0008 | [GitHub issue sync](0008-github-issue-sync.md) | Complete |

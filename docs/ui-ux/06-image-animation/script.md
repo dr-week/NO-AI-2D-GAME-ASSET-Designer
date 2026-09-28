@@ -1,6 +1,6 @@
 # UI-06 · Layered illustration animation
 
-Status: polygon/color masks, basic motion, bounded templates, randomized animation trials,
+Status: polygon/color masks, native text layers, basic motion, bounded templates, randomized animation trials,
 local like/dislike feedback, project JSON, browser save/restore, and animated SVG export
 implemented; editable paths, pattern-tile authoring, and wave motion planned. See
 [workflow](../../workflows/layered-illustration-animation.md).

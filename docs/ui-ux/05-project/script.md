@@ -1,8 +1,8 @@
 # UI-05 · Project
 
-Status: partial. The image-animation workspace supports project JSON save/open,
-browser save/restore, and animated SVG export. Automatic autosave, character projects,
-PNG export, and frame sequences remain planned.
+Status: partial. Image-animation projects use version 2 JSON and migrate version 1 files.
+Save/open, browser restore, and animated SVG export work. Automatic autosave, character
+projects, PNG export, and frame sequences remain planned.
 
 ## Purpose
 Preserve editable work and export transparent artwork.

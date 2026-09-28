@@ -13,7 +13,9 @@ The editor uses explicit geometry, layers, and animation controls. It does not r
 
 **Available now:** portrait SVG character with joint posing and bounded proportions; image workspace with raster masks, text overlays, motion previews, JSON projects, SVG export, and local feedback.
 
-**Planned:** character styling and rigging, project save/export, clean-plate editing, and expanded animation tools. See [requirements](docs/requirements.md) and [open issues](docs/issues.md).
+**Planned:** character styling and rigging, clean-plate editing, keyframe animation, character project files, PNG export, and frame sequences. See [requirements](docs/requirements.md) and [open issues](docs/issues.md).
+
+Contribution ownership and handoffs: [contribution log](docs/contributions/README.md).
 
 ## Start
 

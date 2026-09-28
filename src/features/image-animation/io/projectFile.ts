@@ -31,7 +31,8 @@ export async function readImageProject(file: File): Promise<ImageProject> {
 export function validateImageProject(value: unknown): ImageProject {
   if (!value || typeof value !== 'object') throw new Error('Project data must be an object.')
   const project = value as Partial<ImageProject>
-  if (project.kind !== '2dmaker-image-animation' || (project.version !== 1 && project.version !== projectVersion)) throw new Error('Unsupported project format or version.')
+  const version = (value as { version?: unknown }).version
+  if (project.kind !== '2dmaker-image-animation' || (version !== 1 && version !== projectVersion)) throw new Error('Unsupported project format or version.')
   if (!Number.isInteger(project.width) || !Number.isInteger(project.height) || project.width! <= 0 || project.height! <= 0 || project.width! > 6000 || project.height! > 6000 || project.width! * project.height! > 16_000_000) {
     throw new Error('Project canvas dimensions are invalid or exceed 16 MP.')
   }

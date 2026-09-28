@@ -20,7 +20,8 @@ animation studios.
    Automatic autosave, character projects, PNG export, and frame sequences remain planned.
 4. Laya maps text requests to validated, predefined character decisions.
 5. Extend image scenes with editable paths, pattern tiles, and wave motion. Current tools
-   support raster masks, centered text layers, simple motion, JSON projects, and SVG export.
+   support raster masks, editable SVG text layers, basic transforms/entrances, JSON projects,
+   and SVG export.
 
 Image-animation trials and local like/dislike logs are implemented. Ratings never train or
 modify the app; users can download the log.

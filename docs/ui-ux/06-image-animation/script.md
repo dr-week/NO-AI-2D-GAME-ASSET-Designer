@@ -9,15 +9,17 @@ implemented; editable paths, pattern-tile authoring, and wave motion planned. Se
 Import simple artwork, separate useful regions into layers, then preview lightweight motion. The workspace is labeled Animation in navigation.
 
 ## Controls
-Local image picker, polygon/color selection mode, color tolerance, text overlay content,
-color and size, layer name/list, motion template, project JSON, browser restore, SVG export,
-random trials, and feedback controls. Future: mask correction, editable paths, and wave tools.
+The side panel separates four workflows: Project actions; Themes & motion; New region and
+Text authoring; and layer selection and editing. Image import sits above them. Each workflow
+has its own UI component and shares the panel's drawer and control styles. Future: mask
+correction, editable paths, and wave tools.
 
 ## Flow
 Import image → select or outline a region, or add centered text → apply a template or set
 motion → preview → save JSON or export animated SVG.
 Generate a random motion trial → preview → rate it → save ratings in bounded localStorage;
-optionally append to a user-selected folder or download a JSONL log. Ratings do not change
+optionally append animation ratings to a user-selected folder or export all categories to
+one JSONL log. Ratings do not change
 generation rules automatically. Save a clean plate when motion needs to expose previously
 hidden background.
 

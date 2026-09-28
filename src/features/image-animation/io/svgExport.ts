@@ -1,4 +1,4 @@
-import { backgroundMotionDuration, motionDefinitions } from '../../animation/themeEngine'
+import { backgroundMotionDuration, motionDefinitions, motionEasings } from '../../animation/themeEngine'
 import type { Motion } from '../model/types'
 import type { ImageProject } from './projectFile'
 import { downloadBlob } from '../../../platform/download'
@@ -26,6 +26,7 @@ export function exportAnimatedSvg(project: ImageProject): void {
   function addMotion(target: SVGElement, motion: Motion, duration: number) {
     const definition = motionDefinitions[motion]
     const transform = definition.transform
+    const easing = motionEasings[definition.easing].svg
     if (transform) {
       const element = document.createElementNS(svgNs, 'animateTransform')
       const durationSeconds = duration * (transform.alternate ? 2 : 1)
@@ -36,7 +37,7 @@ export function exportAnimatedSvg(project: ImageProject): void {
       element.setAttribute('calcMode', 'spline')
       element.setAttribute('keyTimes', transform.alternate ? '0;0.5;1' : '0;1')
       element.setAttribute('values', transform.alternate ? `${transform.from};${transform.to};${transform.from}` : `${transform.from};${transform.to}`)
-      element.setAttribute('keySplines', transform.alternate ? '0.2 0 0 1;0.2 0 0 1' : '0.2 0 0 1')
+      element.setAttribute('keySplines', transform.alternate ? `${easing};${easing}` : easing)
       element.setAttribute('additive', 'sum')
       target.append(element)
     }
@@ -48,7 +49,7 @@ export function exportAnimatedSvg(project: ImageProject): void {
       element.setAttribute('dur', `${duration}s`)
       element.setAttribute('repeatCount', transform?.repeat ? 'indefinite' : '1')
       element.setAttribute('calcMode', 'spline')
-      element.setAttribute('keySplines', '0.2 0 0 1')
+      element.setAttribute('keySplines', easing)
       target.append(element)
     }
   }

@@ -2,13 +2,13 @@
   import { downloadBlob } from '../../../platform/download'
   import type { Layer, Motion, FeedbackEntry } from '../model/types'
   import { createFeedbackEntry } from '../model/feedback'
+  import { artworkFeedbackFileName, serializeUnifiedFeedbackLog } from '../../artwork-feedback/io/unifiedExport'
   import {
     appendFeedbackEntry,
     chooseFeedbackDirectory,
     feedbackFileName,
     loadFeedbackEntries,
     saveFeedbackEntries,
-    serializeFeedbackLog,
     type FeedbackDirectory,
   } from '../io/feedbackStore'
 
@@ -44,7 +44,7 @@
   }
 
   function downloadLog() {
-    downloadBlob(new Blob([serializeFeedbackLog(entries)], { type: 'application/x-ndjson' }), feedbackFileName)
+    downloadBlob(new Blob([serializeUnifiedFeedbackLog()], { type: 'application/x-ndjson' }), artworkFeedbackFileName)
   }
 
   async function rateTrial(rating: FeedbackEntry['rating']) {
@@ -88,7 +88,7 @@
   <p aria-live="polite">{status}</p>
   <p class="feedback-count">{entries.length} ratings stored locally</p>
   <button type="button" onclick={chooseFolder}>Choose feedback folder</button>
-  <button type="button" disabled={!entries.length} onclick={downloadLog}>Download feedback log</button>
+  <button type="button" onclick={downloadLog}>Export all ratings (JSONL)</button>
 </section>
 
 <style lang="scss">

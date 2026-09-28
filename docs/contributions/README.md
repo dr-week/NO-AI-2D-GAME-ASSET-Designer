@@ -87,9 +87,31 @@ Owner: name
 | 0063 | [Character animation clips and transport](0063-character-animation-clips-and-transport.md) | Complete |
 | 0064 | [Laya integration verification](0064-laya-integration-verification.md) | Complete |
 | 0065 | [Landscape style catalog](0065-landscape-style-catalog.md) | Complete |
+| 0066 | [Animation quality review workflow](0066-animation-quality-review-workflow.md) | Complete |
+| 0067 | [Launcher reuses running app](0067-launcher-reuses-running-app.md) | Complete |
+| 0068 | [Free 2D asset source and license register](0068-free-2d-asset-source-and-license-register.md) | Complete |
+| 0069 | [Local System 1 character decisions](0069-local-system-one-character-decisions.md) | Complete |
+| 0072 | [Launcher port race recovery](0072-launcher-port-race-recovery.md) | Complete |
 | 0070 | [Local System 1 character decisions](0070-local-system-one-character-decisions.md) | Complete |
 | 0071 | [Laya design decision research](0071-laya-design-decision-research.md) | Complete |
+| 0073 | [Image layer model extraction](0073-image-layer-model-extraction.md) | Complete |
 | 0074 | [Character design profile decisions](0074-character-design-profile-decisions.md) | Complete |
+| 0075 | [Landscape environments and lighting system](0075-landscape-environments-and-lighting-system.md) | Complete |
+| 0076 | [System 1 Laya implementation audit](0076-system-1-laya-implementation-audit.md) | Complete |
+| 0077 | [Landscape scene grammar and composition](0077-landscape-scene-grammar-and-composition.md) | Complete |
+| 0078 | [Purpose-led 2D motion easing](0078-purpose-led-2d-motion-easing.md) | Complete |
+| 0079 | [Laya local decision integration smoke](0079-laya-local-decision-integration-smoke.md) | Complete |
+| 0080 | [Unified artwork feedback export](0080-unified-artwork-feedback-export.md) | Complete |
+| 0081 | [Laya System One decision architecture docs](0081-laya-system-one-decision-architecture-docs.md) | Complete |
+| 0082 | [Laya GitHub runtime integration review](0082-laya-github-runtime-integration-review.md) | Active |
+| 0083 | [Temperate forest silhouette pass](0083-temperate-forest-silhouette-pass.md) | Complete |
+| 0084 | [Free 2D asset library refresh](0084-free-2d-asset-library-refresh.md) | Active |
+| 0085 | [Split image animation workflow panels](0085-split-image-animation-workflow-panels.md) | Complete |
+| 0086 | [Seeded night sky design pass](0086-seeded-night-sky-design-pass.md) | Complete |
+| 0087 | [Landscape SVG export boundary](0087-landscape-svg-export-boundary.md) | Complete |
+| 0088 | [Local SQLite backend foundation](0088-local-sqlite-backend-foundation.md) | Complete |
+| 0089 | [README product and research overview](0089-readme-product-and-research-overview.md) | Active |
+| 0090 | [Landscape template backend integration plan](0090-landscape-template-backend-integration-plan.md) | Active |
 
 Records 0001–0003 predate the numbered handoff format. Their notes are historical; use the
 task queue for current work and this index for completed change records.

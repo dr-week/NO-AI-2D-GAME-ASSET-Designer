@@ -13,17 +13,29 @@ add dependencies only for a demonstrated requirement.
 |---|---|
 | `src/app/` | Workspace navigation, shared character state, feature composition. |
 | `src/platform/` | Browser utilities shared by multiple features, such as downloads. |
+| `backend/src/` | Optional loopback API, SQLite schema migration, and landscape-template repository. |
 | `src/features/character/model/` | Skeleton, geometry, proportions, bone scales, and clip sampling. |
 | `src/features/character/ui/` | Character controls and SVG preview. |
 | `src/features/character/io/` | Standalone SVG export. |
-| `src/features/laya/model/` | Deterministic command parsing and validated decision contracts; no inference runtime. |
+| `src/features/laya/model/` | Character profiles, deterministic brief rules, command parsing, and result validation. |
+| `src/features/laya/io/systemOneClient.ts` | Typed boundary to optional local System-One service; validates catalog IDs before staging a proposal. |
 | `src/features/animation/` | Shared image/text motion definitions and seeded template recipes. |
-| `src/features/image-animation/` | Image/text layers, masks, editor UI, project/feedback IO, SVG export. |
-| `src/features/landscape/` | Deterministic scene generation, template contract, local template storage, controls/export. |
+| `src/features/image-animation/` | Image/text layers, masks, editor UI, animation feedback storage, project IO, and SVG export. |
+| `src/features/image-animation/ui/` | Panel composition with focused project, motion, layer-authoring, and layer-stack workflows; `ToolDrawer.svelte` shares disclosure structure. |
+| `src/features/image-animation/model/motion.ts` | Shared motion selection defaults for layer controls. |
+| `src/features/image-animation/model/motion.ts` | Shared motion selection defaults for layer controls. |
+| `src/features/artwork-feedback/io/` | Character/Landscape rating storage and cross-feature JSONL export. |
+| `src/features/artwork-feedback/ui/` | Shared Character/Landscape rating controls. |
+| `src/features/landscape/` | Deterministic scene generation, template contract, local template storage, and controls. |
 | `src/features/landscape/model/materials.ts` | Seeded SVG material patterns and optional tile-loop timing. |
+| `src/features/landscape/model/environments.ts` | Environment palette/description catalog and stable biome IDs. |
+| `src/features/landscape/model/compositions.ts` | Stable composition catalog, default mapping, and seeded SVG scene grammar. |
+| `src/features/landscape/model/environmentArtwork.ts` | Seeded environment-specific foreground silhouettes. |
+| `src/features/landscape/model/lighting.ts` | Time-of-day sky, seeded night constellations/moon phases, and environment-specific sky accents. |
 | `src/features/landscape/model/themes.ts` | Curated style metadata, category, region, and stable theme IDs. |
 | `src/features/landscape/model/themeArtwork.ts` | Bounded seeded SVG accents for each landscape style. |
 | `src/features/landscape/model/ridge.ts` | Seeded smooth value-noise samples and SVG cubic ridge paths. |
+| `src/features/landscape/io/sceneExport.ts` | Landscape SVG download and a filename derived from the complete scene recipe. |
 | `src/features/three-d/` | Lazy-loaded Three.js editor, categorized primitive builders, camera projection and views, PNG preview export. |
 | `src/styles/` | Global tokens and shared base styles. |
 
@@ -31,6 +43,9 @@ add dependencies only for a demonstrated requirement.
 component props. Put file, browser storage, and export operations in that feature's `io/`;
 put pure data rules in `model/`; keep Svelte rendering and interaction in `ui/`. Add a shared
 module only when multiple real callers need one owner.
+
+Image/text layer shape, defaults, and count limits belong to
+`src/features/image-animation/model/layers.ts`; UI components own interaction and messages.
 
 ## Data flow and boundaries
 
@@ -43,17 +58,27 @@ module only when multiple real callers need one owner.
 - Ridge profiles use low-frequency seeded variation with small detail noise; cubic SVG paths smooth silhouettes without a runtime dependency.
 - Motion definitions have one owner. Preview and SVG export use the same values.
 - Stable IDs, numeric limits, and schema versions are validated at file/storage boundaries.
+- Laya is an opt-in local service reached through the Vite development proxy. Its output only selects a known profile/theme and requires a separate user apply action; deterministic rules and manual controls remain available.
+- Laya decision flow, file ownership, runtime limits, and evaluation gate: [System 1 integration](../research/laya-integration.md).
+- Optional local API and persistence boundary: [backend architecture](../research/backend-architecture.md). Browser storage remains the active UI path until the template adapter migration is completed.
 - Save/export receives a feature snapshot; rendering does not mutate saved data.
 
 ## Current storage and motion
 
 - Landscape themes are a code-owned catalog; user templates persist only stable style IDs and bounded scene settings in IndexedDB. Validated JSON backups remain portable across catalog additions.
+- Landscape recipe axes: landform, composition, environment, lighting, illustration theme,
+  color mood, material, and seed. `compositions.ts` owns layout IDs and scene grammar; environment
+  art and sky are separate renderers. Templates validate optional composition and keep old recipes
+  readable through deterministic composition defaults.
 - Image projects: versioned JSON plus one bounded 1.5 MB `localStorage` restore snapshot.
 - Feedback: bounded local/browser records, optional user-selected folder append, JSONL download.
+- Quality review: proposed staged workflow is documented in [animation quality review](workflows/animation-quality-review.md); no automated grade or AI reviewer is implemented.
 - Remote sync stays out of scope until accounts, sharing, or multi-device access is required.
 - Image/text motion uses CSS presets and seeded recipe data. Character Wave motion uses a
   bounded keyframe clip sampled by a cancellable `requestAnimationFrame` loop for playback
   and scrubbing; WAAPI remains suitable for DOM-only effects.
+- Image/text motion definitions own purpose-based easing: gentle loops use symmetric easing;
+  entrances use a quick-settle curve. Preview and SVG export consume the same motion definition.
 - Profile before adding more workers or dependencies; use fixed timestamps for deterministic frame export.
 - Raster masks describe visible pixels and cannot restore occluded backgrounds.
 
@@ -73,5 +98,6 @@ module only when multiple real callers need one owner.
 | [Workflow](workflows/layered-illustration-animation.md) | Image segmentation and motion limits. |
 | [Procedural 2D art](../research/procedural-2d-art.md) | Seeded scene, material, and seamless-loop rules. |
 | [Art direction](../research/art-direction-foundations.md) | Composition, landscape depth, character silhouette, and shared style rules. |
+| [Backend architecture](../research/backend-architecture.md) | Local API, SQLite boundary, runtime limits, and migration sequence. |
 
 See [Contributing](contributing.md) for the flexible change workflow and [technology research](../research/stack-and-architecture.md) for stack evidence.

@@ -22,14 +22,23 @@ These logs cover launcher and Vite server failures. Browser-side JavaScript erro
 in the browser developer console; browser security prevents this local launcher from
 writing those errors directly to disk.
 
+## Optional local backend
+
+For the SQLite API, open a second PowerShell window and run
+`powershell -File scripts/start-local-backend.ps1`. It binds only to `127.0.0.1:4174` and
+stores the database under the OS user-data directory. The landscape template UI still uses
+IndexedDB; see [backend architecture](../research/backend-architecture.md) before enabling it.
+
 ## Optional Laya model
 
 For local development CPU inference, open a second PowerShell window and run
 `powershell -File scripts/start-laya-system-one.ps1`. This uses the community `laya-system-one`
-runtime, pinned to 1.3.3. First launch installs its native runtime; first prediction downloads roughly 324 MB of
-model weights. Nothing is added to the app bundle. Bind stays on `127.0.0.1:8081`; Vite proxies
-the development UI request. If the service is stopped, manual controls and deterministic rules
-remain available. Upstream reports weak zero-shot benchmark results, so review every suggestion.
+runtime, pinned to 1.3.3. First launch installs its native runtime; first prediction downloads
+roughly 324 MB of model weights. Nothing is added to the app bundle. Bind stays on
+`127.0.0.1:8081`; Vite proxies the development UI request. If the service is stopped, manual
+controls and deterministic rules remain available. Review every suggestion. See the
+[Laya integration decision](../research/laya-integration.md) and the
+[runtime project](https://github.com/italoalmeida0/laya-system-one).
 
 Contribution IDs are allocated by `node scripts/new-contribution.mjs "Short title"`.
 If a forced stop leaves `docs/contributions/.index-lock`, confirm no allocator is running,

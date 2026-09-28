@@ -98,13 +98,12 @@ Respect reduced motion; feedback remains local and does not train the app.
 
 ## 3D web technology check · 2026-09-28
 
-- Product scope remains 2D. Use CSS perspective/transforms only for lightweight interface
-  depth; they need no 3D scene engine.
-- Do not add a 3D runtime to the editor. If true 3D scenes become a requirement, evaluate
-  Three.js behind a separate, lazy-loaded feature. Its WebGPU renderer can fall back to
-  WebGL 2, but Three.js still documents it as evolving; its WebGL renderer remains supported.
-- Keep current SVG/Canvas layers independent so a future 3D preview cannot spread through
-  character, image, or project data models.
+- The editor now includes a separate, lazy-loaded Three.js workspace for true 3D artwork.
+  Use CSS perspective/transforms only for lightweight interface depth.
+- Use `WebGLRenderer` as the current stable renderer. `WebGPURenderer` has a WebGL 2 fallback,
+  but the upstream guide still describes it as experimental.
+- Keep SVG/Canvas features independent so the 3D scene model stays out of character, image,
+  and 2D project data.
 
 References: [CSS 3D transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms),
 [Three.js renderer guidance](https://threejs.org/manual/pages/webgpurenderer),
@@ -119,7 +118,7 @@ views. Geometry and UI remain separate from existing 2D models. It uses Three.js
 (`WebGLRenderer`) and the official `OrbitControls` addon, with community TypeScript declarations.
 The WebGL renderer remains the stable choice for WebGL 2; WebGPU is deferred because the
 upstream guide still describes it as experimental. The initial 3D code is code-split; build
-output measured about 142.6 kB gzip for its chunk, separate from the 45.7 kB main chunk.
+output measured about 142.6 kB gzip for its chunk, separate from the 50.9 kB main chunk.
 
 Upstream implementation source: [Three.js GitHub](https://github.com/mrdoob/three.js),
 [OrbitControls source](https://github.com/mrdoob/three.js/blob/dev/examples/jsm/controls/OrbitControls.js),

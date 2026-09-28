@@ -53,11 +53,6 @@ export function saveFeedbackEntries(entries: FeedbackEntry[]): boolean {
   }
 }
 
-export function serializeFeedbackLog(entries: FeedbackEntry[]): string {
-  const text = entries.map((entry) => JSON.stringify(entry)).join('\n')
-  return text ? `${text}\n` : ''
-}
-
 export async function chooseFeedbackDirectory(): Promise<FeedbackDirectory | null> {
   const picker = (window as DirectoryPickerWindow).showDirectoryPicker
   return picker ? picker.call(window) : null

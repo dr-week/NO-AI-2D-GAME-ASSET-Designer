@@ -14,15 +14,20 @@ animation studios.
 - Torso and matching left/right arm and leg bone lengths have bounded 70–130% controls.
 - Export the current character pose as standalone transparent SVG; omit editor-only overlays.
 - Provide a separate Landscape workspace that generates editable starter scenes locally as SVG,
-  with coast, hills, and mountain presets and no required image import.
+  with coast, hills, and mountain landforms; temperate, desert, tropical, alpine, arctic, and
+  alien environments; morning, daylight, golden-hour, and night lighting; and six selectable
+  composition grammars. Random scenes vary composition as well as landform, environment, light,
+  palette, style, and seed. No image import is required.
 - Landscape supports flat, seeded grain, and seeded ripple materials; optional material motion
   repeats seamlessly and keeps the scene seed reproducible.
-- Landscape exposes a curated art-style catalog with category, region, tags, and seeded SVG accents. New user scenes and saved templates reference stable style IDs; imported template records are validated.
+- Landscape exposes a curated art-style catalog with category, region, tags, and seeded SVG accents. Environment, lighting, color mood, material, and landform remain separate scene settings. New user scenes and saved templates reference stable style IDs; imported template records are validated.
 - Seeded landscape ridges use smooth, bounded profiles and reproduce exactly for the same seed.
 - Landscape recipes can be saved locally, reloaded, deleted, and transferred through validated JSON backup files.
 - Provide image and text layers, basic motion preview, versioned image-project JSON, and SVG export.
 - Laya accepts deterministic pose, proportion, bone-length, and reset commands. Validate
   commands locally against the existing character limits; keep manual controls available.
+- Character briefs support stable, bounded Balanced, Chibi, Heroic, Sturdy, and Slender body profiles. Explicit feature cues can refine a selected profile.
+- Landscape style options are grouped by catalog category. Optional local Laya suggestions map briefs only to existing style IDs and require review before apply.
 
 ## Later phases
 1. Extend the built-in Wave clip with additional bounded clips and editable timing; add a timeline
@@ -30,12 +35,16 @@ animation studios.
 2. Add character templates/projects with versioned JSON and a clear backup/import path.
 3. Add editable image paths, mask correction, pattern tiles, and wave motion as separate slices.
 4. Add PNG and frame-sequence export when prioritized; use deterministic frame timing.
-5. Optional non-LLM Laya System 1 inference may map typed choices and scores to validated
-   controls. Keep manual controls; no inference runtime is included.
+5. Evaluate Laya on reviewed, held-out art briefs and benchmark supported CPUs before
+   considering default or production inference. Keep manual controls and explicit review.
 6. Clothing, colors, gradients, and shadows remain later character styling work.
 
 Image-animation trials and local like/dislike logs are implemented. Ratings never train or
 modify the app; users can download the log.
+
+Animation grading and AI review are not implemented. The proposed rubric and staged path are
+in [animation quality review](workflows/animation-quality-review.md); keep any first release
+human-led and evidence-based until reviewers and thresholds are calibrated.
 
 ## Constraints
 - TypeScript and SCSS; no Python or game engine.

@@ -102,7 +102,7 @@
   .selection { fill: #5269c922; stroke: #5269c9; stroke-width: 4; stroke-dasharray: 8 5; }
   .selection-point { fill: white; stroke: #5269c9; stroke-width: 2; }
   .keyboard-cursor { fill: #ffdf66aa; stroke: #302800; stroke-width: 3; pointer-events: none; }
-  .motion-effect { transform-box: view-box; transform-origin: 0 0; animation: layer-motion var(--cycle) cubic-bezier(.2, 0, 0, 1) var(--motion-iterations) var(--motion-direction) both; }
+  .motion-effect { transform-box: view-box; transform-origin: 0 0; animation: layer-motion var(--cycle) var(--motion-easing) var(--motion-iterations) var(--motion-direction) both; }
   @keyframes layer-motion { from { transform: var(--motion-from); opacity: var(--opacity-from); } to { transform: var(--motion-to); opacity: var(--opacity-to); } }
   @media (prefers-reduced-motion: reduce) { .motion-effect { animation: none; } }
 </style>

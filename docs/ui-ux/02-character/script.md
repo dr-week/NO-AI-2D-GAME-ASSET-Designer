@@ -1,12 +1,12 @@
 # UI-02 · Character
 
-Status: Front-facing rig, full joint controls, four shape-proportion controls, five symmetric bone-length controls, transparent SVG export, and bounded Laya commands implemented. Silhouette drawing, asymmetrical rigging, and clothing remain planned.
+Status: Front-facing rig, bounded controls, five body profiles, local brief rules, optional reviewable Laya suggestions, and transparent SVG export implemented. Silhouette drawing, asymmetrical rigging, and clothing remain planned.
 
 ## Purpose
 Build a front-facing character from connected shapes and a T-pose skeleton.
 
 ## Controls
-Show bones/joints; adjust every joint, head/body widths, and torso/arm/leg bone lengths; randomize or mirror a pose; select Breathe, Reach, or Wave; step between key poses, play/pause/restart, scrub, and adjust speed; apply Laya commands; reset each control group independently; export the current character as SVG. Bone scales range from 70% to 130% and keep left/right limbs matched.
+Select Balanced, Chibi, Heroic, Sturdy, or Slender body profile; refine it with explicit brief cues or an optional local Laya suggestion. Review model suggestions before applying. Manual controls remain available. Show bones/joints; pose or mirror joints; preview Breathe, Reach, or Wave; export SVG. Bone scales stay bounded at 70–130% and match left/right limbs.
 
 ## Flow
 Open the front-facing rig → adjust shape widths or bone lengths → pose, randomize, or mirror joints → choose a clip and inspect key poses → set speed and preview/restart/scrub → export SVG or reset pose, widths, or lengths independently.

@@ -13,7 +13,7 @@
     listLandscapeTemplates,
     saveLandscapeTemplate,
   } from '../io/templateStore'
-  import type { LandscapeScene } from '../model/scene'
+  import { defaultComposition, landscapeCompositions, landscapeEnvironments, landscapeLighting, landscapePresets, type LandscapeScene } from '../model/scene'
   import { landscapeThemes } from '../model/themes'
 
   let { scene, onApply }: { scene: LandscapeScene; onApply: (scene: LandscapeScene) => void } = $props()
@@ -139,7 +139,7 @@
       <ul class="template-list" aria-label="Saved landscape templates">
         {#each templates as template (template.id)}
           <li>
-            <div class="template-info"><strong>{template.name}</strong><small>{landscapeThemes[template.scene.theme ?? 'contemporary'].name} · {template.scene.preset} · {template.scene.palette} · #{template.scene.seed}</small></div>
+            <div class="template-info"><strong>{template.name}</strong><small>{landscapeEnvironments[template.scene.environment ?? 'temperate'].label} · {landscapePresets[template.scene.preset]} · {landscapeCompositions[template.scene.composition ?? defaultComposition(template.scene.preset, template.scene.environment ?? 'temperate')]} · {landscapeLighting[template.scene.lighting ?? 'golden-hour']} · {landscapeThemes[template.scene.theme ?? 'contemporary'].name} · #{template.scene.seed}</small></div>
             <button type="button" class="load-button" onclick={() => { onApply(template.scene); failed = false; message = `Loaded “${template.name}”.` }} disabled={busy}>Load</button>
             <button type="button" class="delete-button" aria-label={`Delete ${template.name}`} title={`Delete ${template.name}`} onclick={() => void removeWithoutPrompt(template)} disabled={busy}><Icon name="remove" size={15} /></button>
           </li>

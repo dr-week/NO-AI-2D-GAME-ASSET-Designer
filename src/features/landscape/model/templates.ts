@@ -1,6 +1,9 @@
 import { landscapePalettes, landscapePresets, type LandscapeScene } from './scene.ts'
 import { landscapeMaterials } from './materials.ts'
 import { isLandscapeThemeId, type LandscapeThemeId } from './themes.ts'
+import { isLandscapeEnvironment, type LandscapeEnvironment } from './environments.ts'
+import { landscapeLighting, type LandscapeLighting } from './lighting.ts'
+import { isLandscapeCompositionValid } from './compositions.ts'
 
 export type LandscapeTemplate = {
   version: 1
@@ -41,7 +44,7 @@ export function validateLandscapeTemplate(value: unknown): LandscapeTemplate {
   const validId = validateLandscapeTemplateId(id)
   if (typeof name !== 'string' || !name.trim() || name.length > maxNameLength) throw new Error('Template name must be 1–80 characters.')
   if (!isDate(createdAt) || !isDate(updatedAt)) throw new Error('Template timestamps are invalid.')
-  if (!isRecord(scene) || typeof scene.preset !== 'string' || !Object.hasOwn(landscapePresets, scene.preset) || typeof scene.palette !== 'string' || !Object.hasOwn(landscapePalettes, scene.palette) || typeof scene.seed !== 'number' || !Number.isSafeInteger(scene.seed) || scene.seed < 0 || scene.seed > 0xffffffff || (scene.theme !== undefined && !isLandscapeThemeId(scene.theme)) || (scene.material !== undefined && (typeof scene.material !== 'string' || !Object.hasOwn(landscapeMaterials, scene.material))) || (scene.materialLoop !== undefined && typeof scene.materialLoop !== 'boolean')) {
+  if (!isRecord(scene) || typeof scene.preset !== 'string' || !Object.hasOwn(landscapePresets, scene.preset) || typeof scene.palette !== 'string' || !Object.hasOwn(landscapePalettes, scene.palette) || typeof scene.seed !== 'number' || !Number.isSafeInteger(scene.seed) || scene.seed < 0 || scene.seed > 0xffffffff || (scene.environment !== undefined && !isLandscapeEnvironment(scene.environment)) || (scene.composition !== undefined && !isLandscapeCompositionValid(scene.composition, scene.preset as LandscapeScene['preset'], (scene.environment ?? 'temperate') as LandscapeEnvironment)) || (scene.lighting !== undefined && (typeof scene.lighting !== 'string' || !Object.hasOwn(landscapeLighting, scene.lighting))) || (scene.theme !== undefined && !isLandscapeThemeId(scene.theme)) || (scene.material !== undefined && (typeof scene.material !== 'string' || !Object.hasOwn(landscapeMaterials, scene.material))) || (scene.materialLoop !== undefined && typeof scene.materialLoop !== 'boolean')) {
     throw new Error('Template scene settings are invalid.')
   }
   return {
@@ -51,7 +54,7 @@ export function validateLandscapeTemplate(value: unknown): LandscapeTemplate {
     name: name.trim(),
     createdAt,
     updatedAt,
-    scene: { preset: scene.preset as LandscapeScene['preset'], palette: scene.palette as LandscapeScene['palette'], seed: scene.seed, ...(scene.theme ? { theme: scene.theme as LandscapeThemeId } : {}), ...(scene.material ? { material: scene.material as LandscapeScene['material'] } : {}), ...(scene.materialLoop !== undefined ? { materialLoop: scene.materialLoop } : {}) },
+    scene: { preset: scene.preset as LandscapeScene['preset'], palette: scene.palette as LandscapeScene['palette'], seed: scene.seed, ...(scene.composition ? { composition: scene.composition as LandscapeScene['composition'] } : {}), ...(scene.environment ? { environment: scene.environment as LandscapeEnvironment } : {}), ...(scene.lighting ? { lighting: scene.lighting as LandscapeLighting } : {}), ...(scene.theme ? { theme: scene.theme as LandscapeThemeId } : {}), ...(scene.material ? { material: scene.material as LandscapeScene['material'] } : {}), ...(scene.materialLoop !== undefined ? { materialLoop: scene.materialLoop } : {}) },
   }
 }
 

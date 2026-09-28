@@ -14,13 +14,14 @@ register holds status, trigger, and next action.
 | F-07 | Raster/video export | Fixed-time sampling and Canvas frame rendering | Later | PNG or frame-sequence export is prioritized. Keep deterministic timestamps. | [Animation systems](../../research/animation-systems.md) |
 | F-08 | Remote service | API and shared database | Out of scope | Accounts, collaboration, or cross-device sync becomes a requirement. No server is needed for current local workflows. | [Design](../design.md) |
 | F-09 | Character deformation | Mesh rig or puppet runtime | Deferred | SVG joint geometry fails recorded character acceptance checks. Compare integration cost and licenses before a prototype. | [Animation systems](../../research/animation-systems.md) |
-| F-10 | Laya inference | Optional local CPU System 1 service | Pilot | Validate character-profile agreement on held-out briefs and measure target-device latency, memory, install size, and first-run download before default use. | [Laya integration](../../research/laya-integration.md) |
+| F-10 | Laya inference | Optional local CPU System 1 service | Pilot | Validate design-profile agreement on held-out briefs and measure target-device latency, memory, install size, and first-run download before default use. | [Laya integration](../../research/laya-integration.md) |
 | F-11 | 3D | Lazy Three.js workspace with WebGLRenderer and OrbitControls | Prototype | Grow categories, scene editing, and save/load after this lightweight camera-and-primitive editor is evaluated. Keep 2D feature data independent. | [Stack review](../../research/stack-and-architecture.md) |
 | F-12 | Heavy compute | Rust compiled to WebAssembly | Conditional | A TypeScript Worker misses an agreed latency or memory target; compare end-to-end cost and boundary copies first. | [Stack review](../../research/stack-and-architecture.md) |
 | F-13 | Desktop edition | Tauri with a small Rust host | Conditional | Product requires a packaged desktop app, native file access, or OS-level process control. | [Stack review](../../research/stack-and-architecture.md) |
 | F-14 | Offline tools | Python | Out of runtime scope | A separate asset-preparation or evaluation tool has a clear owner; do not add it to the browser runtime. | [Stack review](../../research/stack-and-architecture.md) |
 | F-15 | Procedural materials | Seeded SVG recipes and tile-periodic motion | Implemented for Landscape | Extend to another feature only when a second caller needs the same material contract. | [Procedural 2D art](../../research/procedural-2d-art.md) |
 | F-16 | Shared artwork model | Versioned scene document, stable node IDs, renderer boundary | Conditional | Cross-feature projects, nested grouping, or object-level editing become committed scope; prototype against SVG export first. | [VisActor fit](../../research/visactor-architecture.md) |
+| F-17 | Free 2D asset catalog | Curated CC0-first starter assets with provenance and license records | Research | Add only when selected assets have verified licenses, formats, and a clear import/template use. Keep downloaded packs out of runtime. | [Free 2D asset sources](free-2d-assets.md) |
 
 ## Rules
 

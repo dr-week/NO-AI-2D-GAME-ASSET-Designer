@@ -3,23 +3,30 @@ export type MotionPreset = 'still' | 'float' | 'drift' | 'pulse' | 'fade' | 'ris
 export type MotionDefinition = {
   name: string
   description: string
+  easing: 'gentle' | 'enter' | 'steady'
   transform?: { type: 'translate' | 'scale' | 'rotate'; from: string; to: string; alternate: boolean; repeat: boolean }
   opacity?: { from: number; to: number }
 }
 
+export const motionEasings = {
+  gentle: { css: 'ease-in-out', svg: '.42 0 .58 1' },
+  enter: { css: 'cubic-bezier(.16, 1, .3, 1)', svg: '.16 1 .3 1' },
+  steady: { css: 'linear', svg: '0 0 1 1' },
+} as const
+
 export const backgroundMotionDuration = 8
 
 export const motionDefinitions: Record<MotionPreset, MotionDefinition> = {
-  still: { name: 'Still', description: 'Keep this layer still.' },
-  float: { name: 'Float', description: 'Gently move up and down.', transform: { type: 'translate', from: '0 0', to: '0 -10', alternate: true, repeat: true } },
-  drift: { name: 'Drift', description: 'Move gently across two directions.', transform: { type: 'translate', from: '0 0', to: '10 -4', alternate: true, repeat: true } },
-  pulse: { name: 'Pulse', description: 'Grow and return to the original size.', transform: { type: 'scale', from: '1', to: '1.025', alternate: true, repeat: true } },
-  fade: { name: 'Fade', description: 'Fade into view once.', opacity: { from: 0, to: 1 } },
-  rise: { name: 'Rise', description: 'Move up into place once.', transform: { type: 'translate', from: '0 14', to: '0 0', alternate: false, repeat: false }, opacity: { from: 0, to: 1 } },
-  rotate: { name: 'Rotate', description: 'Rock gently around the layer pivot.', transform: { type: 'rotate', from: '-5', to: '5', alternate: true, repeat: true } },
-  scaleIn: { name: 'Scale in', description: 'Fade and grow into place.', transform: { type: 'scale', from: '0.92', to: '1', alternate: false, repeat: false }, opacity: { from: 0, to: 1 } },
-  sharedAxisX: { name: 'Shared axis · X', description: 'Fade and slide horizontally into place.', transform: { type: 'translate', from: '24 0', to: '0 0', alternate: false, repeat: false }, opacity: { from: 0, to: 1 } },
-  sharedAxisY: { name: 'Shared axis · Y', description: 'Fade and slide vertically into place.', transform: { type: 'translate', from: '0 24', to: '0 0', alternate: false, repeat: false }, opacity: { from: 0, to: 1 } },
+  still: { name: 'Still', description: 'Keep this layer still.', easing: 'steady' },
+  float: { name: 'Float', description: 'Gently move up and down.', easing: 'gentle', transform: { type: 'translate', from: '0 0', to: '0 -10', alternate: true, repeat: true } },
+  drift: { name: 'Drift', description: 'Move gently across two directions.', easing: 'gentle', transform: { type: 'translate', from: '0 0', to: '10 -4', alternate: true, repeat: true } },
+  pulse: { name: 'Pulse', description: 'Grow and return to the original size.', easing: 'gentle', transform: { type: 'scale', from: '1', to: '1.025', alternate: true, repeat: true } },
+  fade: { name: 'Fade', description: 'Fade into view once.', easing: 'enter', opacity: { from: 0, to: 1 } },
+  rise: { name: 'Rise', description: 'Move up into place once.', easing: 'enter', transform: { type: 'translate', from: '0 14', to: '0 0', alternate: false, repeat: false }, opacity: { from: 0, to: 1 } },
+  rotate: { name: 'Rotate', description: 'Rock gently around the layer pivot.', easing: 'gentle', transform: { type: 'rotate', from: '-5', to: '5', alternate: true, repeat: true } },
+  scaleIn: { name: 'Scale in', description: 'Fade and grow into place.', easing: 'enter', transform: { type: 'scale', from: '0.92', to: '1', alternate: false, repeat: false }, opacity: { from: 0, to: 1 } },
+  sharedAxisX: { name: 'Shared axis · X', description: 'Fade and slide horizontally into place.', easing: 'enter', transform: { type: 'translate', from: '24 0', to: '0 0', alternate: false, repeat: false }, opacity: { from: 0, to: 1 } },
+  sharedAxisY: { name: 'Shared axis · Y', description: 'Fade and slide vertically into place.', easing: 'enter', transform: { type: 'translate', from: '0 24', to: '0 0', alternate: false, repeat: false }, opacity: { from: 0, to: 1 } },
 }
 
 export function motionStyle(motion: MotionPreset, durationSeconds: number): string {
@@ -27,6 +34,7 @@ export function motionStyle(motion: MotionPreset, durationSeconds: number): stri
   const transform = definition.transform
   return [
     `--cycle:${durationSeconds}s`,
+    `--motion-easing:${motionEasings[definition.easing].css}`,
     `--motion-from:${cssTransform(transform?.type, transform?.from)}`,
     `--motion-to:${cssTransform(transform?.type, transform?.to)}`,
     `--motion-direction:${transform?.alternate ? 'alternate' : 'normal'}`,

@@ -17,7 +17,8 @@
     "test:landscape": "node --test tests/landscapeTemplates.test.mjs",
     "test:materials": "node --test tests/proceduralMaterials.test.mjs",
     "test:ridge": "node --test tests/landscapeRidge.test.mjs",
-    "verify": "npm run check && npm run test:animation && npm run test:project && npm run test:feedback && npm run test:laya && npm run test:character && npm run test:character-animation && npm run test:landscape && npm run test:materials && npm run test:ridge && npm run build"
+    "test:three-d": "node --test tests/threeDArtwork.test.mjs",
+    "verify": "npm run check && npm run test:animation && npm run test:project && npm run test:feedback && npm run test:laya && npm run test:character && npm run test:character-animation && npm run test:landscape && npm run test:materials && npm run test:ridge && npm run test:three-d && npm run build"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.0",

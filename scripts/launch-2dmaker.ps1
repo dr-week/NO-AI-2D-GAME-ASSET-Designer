@@ -12,6 +12,15 @@ $stdoutPath = $null
 $stderrPath = $null
 $exitCode = 0
 
+function Test-ExistingMaker([string]$Url) {
+  try {
+    $response = Invoke-WebRequest -Uri $Url -Method Get -TimeoutSec 2 -UseBasicParsing
+    return $response.StatusCode -eq 200 -and $response.Content -match '<title>\s*2D Maker\s*</title>'
+  } catch {
+    return $false
+  }
+}
+
 try { $ownsMutex = $mutex.WaitOne(0) }
 catch [System.Threading.AbandonedMutexException] { $ownsMutex = $true }
 
@@ -36,9 +45,19 @@ try {
   if (-not (Test-Path -LiteralPath $viteEntry)) { throw 'Project dependencies are missing. Run npm ci in the project folder, then retry.' }
 
   $portProbe = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, $Port)
+  $portUnavailable = $false
   try { $portProbe.Start() }
-  catch { throw "Port $Port is unavailable. Close its server or rerun with -Port and an available port." }
+  catch { $portUnavailable = $true }
   finally { $portProbe.Stop() }
+
+  if ($portUnavailable) {
+    if (-not (Test-ExistingMaker $url)) {
+      throw "Port $Port is unavailable and no 2D Maker page responded. Close its server or rerun with -Port and an available port."
+    }
+    Start-Process -FilePath $url
+    Write-Host "2D Maker is already running at $url; opened the existing app."
+    exit 0
+  }
 
   $server = Start-Process -FilePath $node.Source `
     -ArgumentList @('node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', $Port, '--strictPort') `
@@ -49,7 +68,14 @@ try {
   $ready = $false
   while ([DateTime]::UtcNow -lt $deadline) {
     $server.Refresh()
-    if ($server.HasExited) { throw "Vite exited during startup with code $($server.ExitCode)." }
+    if ($server.HasExited) {
+      if (Test-ExistingMaker $url) {
+        Start-Process -FilePath $url
+        Write-Host "Another 2D Maker server claimed port $Port during startup; opened the existing app."
+        exit 0
+      }
+      throw "Vite exited during startup with code $($server.ExitCode)."
+    }
     try {
       $response = Invoke-WebRequest -Uri $url -Method Get -TimeoutSec 1 -UseBasicParsing
       if ($response.StatusCode -eq 200) {

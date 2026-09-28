@@ -9,6 +9,7 @@
   import { createImageProject, loadProjectImage, readImageProject, type ImageProject } from '../io/projectFile'
   import { readProjectLocally, saveProjectLocally } from '../io/projectStore'
   import { exportAnimatedSvg } from '../io/svgExport'
+  import { canAddLayer, createImageLayer, createTextLayer as makeTextLayer } from '../model/layers'
   import { downloadBlob } from '../../../platform/download'
 
   let imageUrl = $state('')
@@ -96,9 +97,9 @@
 
   function createLayer() {
     if (draft.length < 3 && !draftMaskUrl) return
-    if (layers.length >= 32) { error = 'An image can contain up to 32 layers.'; return }
+    if (!canAddLayer(layers)) { error = 'An image can contain up to 32 layers.'; return }
     const id = crypto.randomUUID()
-    layers = [...layers, { id, name: layerName.trim() || 'Untitled layer', points: draft, maskUrl: draftMaskUrl, motion: 'still', duration: 3, kind: 'image' }]
+    layers = [...layers, createImageLayer(id, layerName, draft, draftMaskUrl)]
     selectedId = id
     layerName = 'New layer'
     draft = []
@@ -106,11 +107,12 @@
   }
 
   function createTextLayer(text: string, fill: string, fontSize: number) {
-    if (!imageUrl || !text.trim() || text.length > 500 || !/^#[\da-fA-F]{6}$/.test(fill) || !Number.isFinite(fontSize) || fontSize < 8 || fontSize > 400) return
-    if (layers.length >= 32) { error = 'An image can contain up to 32 layers.'; return }
-    const cleanText = text.trim()
+    if (!imageUrl) return
+    if (!canAddLayer(layers)) { error = 'An image can contain up to 32 layers.'; return }
     const id = crypto.randomUUID()
-    layers = [...layers, { id, name: cleanText.slice(0, 40), motion: 'rise', duration: 0.35, kind: 'text', text: cleanText, x: imageWidth / 2, y: imageHeight / 2, fontSize, fill }]
+    const layer = makeTextLayer(id, text, fill, fontSize, imageWidth, imageHeight)
+    if (!layer) return
+    layers = [...layers, layer]
     selectedId = id
     error = ''
   }

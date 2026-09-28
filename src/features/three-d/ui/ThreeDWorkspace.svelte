@@ -20,6 +20,7 @@
   let exportScene: (() => void) | undefined
 
   const colors = ['#287c79', '#ef8354', '#54478c', '#e5b44f', '#3668a5', '#ba5360']
+  const objectLimit = 48
   const pieces = $derived(artworkCategories.find((item) => item.id === category)?.pieces ?? [])
 
   onMount(() => {
@@ -124,14 +125,16 @@
     }, 'image/png')
     ready = true
 
-    const observer = new ResizeObserver(resize)
-    observer.observe(viewport)
+    const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(resize)
+    if (observer) observer.observe(viewport)
+    else window.addEventListener('resize', resize)
     setCamera()
     resize()
 
     return () => {
       disposed = true
-      observer.disconnect()
+      observer?.disconnect()
+      if (!observer) window.removeEventListener('resize', resize)
       controls.dispose()
       addToScene = undefined
       clearScene = undefined
@@ -151,6 +154,7 @@
   })
 
   function addPiece(id: ArtworkPieceId) {
+    if (objectCount >= objectLimit) return
     addToScene?.(id)
   }
 </script>
@@ -168,9 +172,9 @@
       </select>
     </label>
     <div class="piece-list" aria-label="Add a 3D object">
-      {#each pieces as piece}<button type="button" onclick={() => addPiece(piece.id)} disabled={!ready}>+ {piece.name}</button>{/each}
+      {#each pieces as piece}<button type="button" onclick={() => addPiece(piece.id)} disabled={!ready || objectCount >= objectLimit}>+ {piece.name}</button>{/each}
     </div>
-    <span class="object-count">{objectCount} objects</span>
+    <span class="object-count">{objectCount}/{objectLimit} objects</span>
   </div>
 
   <div class="workarea">

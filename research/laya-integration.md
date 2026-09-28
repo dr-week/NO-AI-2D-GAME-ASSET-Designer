@@ -1,39 +1,82 @@
-# Laya integration
+# Laya System 1 integration
 
-## Scope
+Reviewed: 2026-09-29. This file is the implementation source of truth. Product rules live in
+[Laya design decisions](laya-design-decisions.md).
 
-Laya is a non-autoregressive typed decision model (`choice`, `score`, `noul`), not an image generator. 2D Maker uses it only to choose from existing bounded design IDs; deterministic SVG generation remains owned by each workspace.
+## Role
 
-## Current implementation
+Laya is a non-autoregressive, encoder-based model for typed `choice`, `score`, and yes/no
+(`noul`) decisions. It does not generate images, SVG, text, or geometry. 2D Maker asks it to
+choose from existing design catalogs; feature-owned deterministic code creates the artwork.
 
-- Character catalog: Balanced, Chibi, Heroic, Sturdy, Slender; short local rules also map explicit size cues.
-- Landscape catalog: contemporary and region-specific, tagged themes.
-- Optional `systemOneClient.ts` sends a short brief through `/api/laya/v1/systemone`; it validates the returned ID. The Character UI shows a profile proposal and requires an explicit apply action. Landscape inference remains unconnected.
-- `scripts/start-laya-system-one.ps1` starts the separate native CPU service. Vite proxies only in development. Rules, dropdowns, and manual controls remain usable without it.
-- No model/runtime dependency or model weights are bundled in 2D Maker.
+## Decision flow
 
-## Quality and resource limits
+```text
+Brief + workspace category
+  → one typed question + bounded catalog criteria
+  → local System-One service (development proxy)
+  → validate response type, supported ID, and score range
+  → stage proposal in the matching workspace
+  → user reviews preview and explicitly applies it
+  → deterministic feature renderer uses the selected catalog ID
+```
 
-Upstream Laya reports base checkpoints near chance on its typed-decision benchmark (0.35–0.36 versus 0.318 random), while the reported 0.766 checkpoint was fine-tuned on that benchmark's training split. This is not evidence of quality on art briefs. Do not auto-apply results or treat confidence as accuracy; collect reviewed examples and measure held-out agreement first.
+An invalid, failed, or timed-out request changes no artwork. Numeric model probabilities are
+validated for shape/range only; they are not treated as art-domain confidence or an apply gate.
 
-The community Node runtime reports a ~324 MB model and CPU-native inference, with a much slower WASM fallback. Its measurements are not project benchmarks. First model use downloads weights; this is disclosed and opt-in. No inference service has been installed or run in this project.
+## Code ownership
 
-## Design decisions
+| Path | Responsibility |
+|---|---|
+| `src/features/laya/io/systemOneClient.ts` | Typed request, timeout, response validation, catalog-ID boundary. |
+| `src/features/laya/model/characterProfiles.ts` | Stable character proportion profiles. |
+| `src/features/laya/model/localCharacterDecision.ts` | Deterministic brief rules for supported character cues. |
+| `src/features/laya/ui/CharacterCommandPanel.svelte` | Character brief, proposal review, explicit apply. |
+| `src/features/landscape/model/themes.ts` | Stable landscape style catalog and criteria. |
+| `src/features/landscape/ui/LandscapeWorkspace.svelte` | Landscape proposal review and explicit apply. |
+| `vite.config.ts` | Development-only `/api/laya` proxy to loopback service. |
+| `scripts/start-laya-system-one.ps1` | Starts the separately installed, version-pinned Node service. |
 
-Catalog owns stable IDs, category, region/tags, and a short description. Model picks only among those IDs; it cannot invent geometry, colors, clothing, or new styles. Preview before apply, preserve manual controls, and keep a failed/offline model path recoverable. Material 3 is used as design guidance—tokens, hierarchy, accessibility, and interaction feedback—not as a new UI dependency. See [decision-design research](laya-design-decisions.md).
+Catalogs and renderers remain feature-owned. Laya cannot add IDs or directly change artwork.
+
+## GitHub runtime choice
+
+| Option | Fit |
+|---|---|
+| Upstream [`laya-ts`](https://github.com/NandhaKishorM/laya/tree/main/laya-ts) | TypeScript API for Node CPU/CUDA and browser WebGPU/WASM; optional ONNX Runtime peers. Direct browser inference requires hosting and downloading model assets. |
+| Community [`laya-system-one`](https://github.com/italoalmeida0/laya-system-one) | Node/Bun native service or in-process API; compatible `POST /v1/systemone`; current app can keep its small HTTP adapter. Model is about 324 MB after first use. |
+
+**Use the existing `laya-system-one` local service.** It fits the Vite app without adding a
+model runtime to the browser bundle. The app already uses its typed HTTP contract through
+`systemOneClient.ts` and the loopback-only Vite proxy. Keep model files outside the repository.
+Reconsider upstream `laya-ts` only if a maintained Node inference host or browser model delivery
+becomes a product requirement; measure install size, cold start, CPU/RAM, and held-out art-brief
+quality first. Do not switch to browser WASM by default.
+
+## Current behavior and fallback
+
+- Character: deterministic local rules and manual controls always work; optional model suggests
+  one of five body profiles.
+- Landscape: manual controls always work; optional model suggests one existing style theme.
+- Both model suggestion controls are development-only. The browser bundle does not include
+  model weights; production needs a separately configured service if model suggestions are enabled.
+- The pinned service and one landscape request through the Vite proxy passed a local smoke check.
+  This verifies wiring, not design quality, CPU/RAM cost, or accuracy.
+
+## Limits and evaluation
+
+Laya's upstream typed-decision benchmark is not an art brief benchmark. The upstream README
+reports 0.362 for a base English checkpoint and 0.766 for a fine-tuned checkpoint on that
+benchmark; neither establishes agreement for this product. Before enabling wider use, evaluate
+reviewed, held-out character and landscape briefs against deterministic rules and a majority
+baseline. Report agreement, abstention, latency, and peak memory on target CPUs.
+
+The community Node runtime currently documents about 324 MB model storage after first use;
+this is an upstream figure, not a 2D Maker measurement. Inference stays optional and separate.
 
 ## Sources
 
-- [Laya upstream model and benchmark notes](https://github.com/NandhaKishorM/laya)
-- [Laya System-One Node/browser runtime](https://github.com/italoalmeida0/laya-system-one)
-- [Material Design 3 foundations](https://m3.material.io/foundations/)
-
-## Implementation audit (2026-09-29)
-
-- **Wired, not deployed here:** Character calls `systemOneClient.ts`; the pinned `laya-system-one@1.3.3` service is optional and starts separately. Port 8081 had no listener during this audit, so end-to-end inference was unavailable. Vite's proxy is development-only; production needs a separately configured API host/proxy.
-- **Two decision paths:** character quick design is deterministic rules; model suggestion selects one of five profiles. Landscape suggestion selects one catalog theme. The nine-question proportion resolver is validated by unit tests but is not called by either production UI.
-- **Safe boundary:** model cannot write artwork directly; client restricts answer to catalog IDs and UI requires apply. However low probability is only checked for numeric validity, not gated or shown to users. Do not treat it as reliable confidence or enable automatic application.
-- **Research update:** current upstream docs describe `laya-ts` as an in-repository TypeScript/browser package, but its npm publication is still an open issue. The selected community Node service is distinct from the model's upstream repository. Keep the current pin until a measured, reproducible replacement is ready.
-- **Quality gate before rollout:** create reviewed character briefs; compare against deterministic rules and a simple majority baseline; keep a held-out set; report exact-match agreement, abstention, calibration, cold/warm latency, peak memory, install/cache size, and offline fallback. Upstream typed-decision results are not art-domain validation; base checkpoints score near chance, while 0.766 is the fine-tuned checkpoint on its benchmark's training split.
-
-Research references: [upstream README and runtime options](https://github.com/NandhaKishorM/laya), [upstream benchmark limits](https://github.com/NandhaKishorM/laya/blob/main/BENCHMARKS.md), [published/community TypeScript runtime](https://github.com/italoalmeida0/laya-system-one), and [open `laya-ts` npm publication issue](https://github.com/NandhaKishorM/laya/issues/288).
+- [Laya upstream: typed decision model, `laya-ts`, benchmarks](https://github.com/NandhaKishorM/laya)
+- [Upstream `laya-ts` API and optional runtime peers](https://github.com/NandhaKishorM/laya/blob/main/laya-ts/README.md)
+- [Laya System-One: Node/browser runtime, service API, storage and backends](https://github.com/italoalmeida0/laya-system-one)
+- [Laya design decisions](laya-design-decisions.md)

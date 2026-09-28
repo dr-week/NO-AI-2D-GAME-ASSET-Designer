@@ -1,37 +1,39 @@
 # Laya integration
 
-## Finding
+## Scope
 
-Laya is a non-generative System 1 model. It answers typed `choice`, `score`, and `noul` questions; it does not draw characters or produce free text. The app must translate accepted answers into its own bounded SVG controls.
+Laya is a non-autoregressive typed decision model (`choice`, `score`, `noul`), not an image generator. 2D Maker uses it only to choose from existing bounded design IDs; deterministic SVG generation remains owned by each workspace.
 
-## Upstream and runtime options
+## Current implementation
 
-- Upstream `NandhaKishorM/laya` documents a non-autoregressive decision model. It accepts state plus typed `choice`, `score`, and `noul` questions and returns constrained typed answers in one forward pass. It is a decision engine, not an animation engine.
-- `@receptron/laya` runs the model from Node/TypeScript with ONNX Runtime Node and Hugging Face tokenizers. It is a Node runtime, not a direct browser integration.
-- `laya-system-one` documents Node/Bun native and browser WASM runtimes. Its README states that the multilingual model is fetched on first use and cached (~324 MB on disk); browser use loads model/tokenizer/WASM resources over HTTP. These are upstream claims, not measurements in this project.
+- Character catalog: Balanced, Chibi, Heroic, Sturdy, Slender; short local rules also map explicit size cues.
+- Landscape catalog: contemporary and region-specific, tagged themes.
+- Optional `systemOneClient.ts` sends a short brief through `/api/laya/v1/systemone`; it validates the returned ID. The Character UI shows a profile proposal and requires an explicit apply action. Landscape inference remains unconnected.
+- `scripts/start-laya-system-one.ps1` starts the separate native CPU service. Vite proxies only in development. Rules, dropdowns, and manual controls remain usable without it.
+- No model/runtime dependency or model weights are bundled in 2D Maker.
 
-## Decision
+## Quality and resource limits
 
-Keep core UI and rendering deterministic. Two paths currently exist:
+Upstream Laya reports base checkpoints near chance on its typed-decision benchmark (0.35–0.36 versus 0.318 random), while the reported 0.766 checkpoint was fine-tuned on that benchmark's training split. This is not evidence of quality on art briefs. Do not auto-apply results or treat confidence as accuracy; collect reviewed examples and measure held-out agreement first.
 
-- `commands.ts` parses bounded local text commands. `CharacterCommandPanel.svelte` sends accepted commands to `App.svelte`, which updates character state. This path is integrated; it does not call a model or backend.
-- `characterQuestions.ts` defines nine bounded questions and `characterDecision.ts` validates a structured result, rejects confidence below 0.55, and maps accepted choices to character controls. Contract tests use fixtures; production code has no caller for `resolveCharacterDecision`.
+The community Node runtime reports a ~324 MB model and CPU-native inference, with a much slower WASM fallback. Its measurements are not project benchmarks. First model use downloads weights; this is disclosed and opt-in. No inference service has been installed or run in this project.
 
-No Laya provider, inference runtime, or remote backend is installed. The resolver is a tested adapter contract, not a working decision-model integration. The existing nine questions infer proportions from descriptions, but do not represent animation requests; there is no scene/animation output contract. Do not connect a model until product behavior, browser/server runtime, model download consent/cache, and target-device budgets are chosen. Keep controls and rendering deterministic.
+## Design decisions
 
-If adding it later, isolate one provider behind a small `predict(state, questions)` adapter. Validate the typed response with `resolveCharacterDecision`, then apply through the existing character state owner. Add a separate animation decision contract only when its input and output are defined. Benchmark quality, latency, and memory on supported devices before enabling it by default.
-
-## Verification (2026-09-29)
-
-- `npm run test:laya`: passed, 6 tests.
-- Browser check: valid proportion command applied; out-of-range command rejected without changing state; reset restored defaults.
-- `npm run check`: blocked by missing `three` and `three/addons/controls/OrbitControls.js` type declarations in `src/features/three-d/`; related callback parameters also become implicit `any`.
-- Vite served the UI, with dependency-scan warnings from vendored Anime.js examples under `research/vendor/` (`animejs` and `tweaks` unresolved).
-
-These checks verify the local command path and resolver contract only. They do not measure a Laya model, because none is connected.
+Catalog owns stable IDs, category, region/tags, and a short description. Model picks only among those IDs; it cannot invent geometry, colors, clothing, or new styles. Preview before apply, preserve manual controls, and keep a failed/offline model path recoverable. Material 3 is used as design guidance—tokens, hierarchy, accessibility, and interaction feedback—not as a new UI dependency. See [decision-design research](laya-design-decisions.md).
 
 ## Sources
 
-- [Laya source repository](https://github.com/NandhaKishorM/laya) · [Laya model card](https://huggingface.co/convaiinnovations/laya)
-- [TypeScript/ONNX wrapper and requirements](https://github.com/receptron/laya)
-- [Node/Bun and browser WASM runtime](https://github.com/italoalmeida0/laya-system-one)
+- [Laya upstream model and benchmark notes](https://github.com/NandhaKishorM/laya)
+- [Laya System-One Node/browser runtime](https://github.com/italoalmeida0/laya-system-one)
+- [Material Design 3 foundations](https://m3.material.io/foundations/)
+
+## Implementation audit (2026-09-29)
+
+- **Wired, not deployed here:** Character calls `systemOneClient.ts`; the pinned `laya-system-one@1.3.3` service is optional and starts separately. Port 8081 had no listener during this audit, so end-to-end inference was unavailable. Vite's proxy is development-only; production needs a separately configured API host/proxy.
+- **Two decision paths:** character quick design is deterministic rules; model suggestion selects one of five profiles. Landscape suggestion selects one catalog theme. The nine-question proportion resolver is validated by unit tests but is not called by either production UI.
+- **Safe boundary:** model cannot write artwork directly; client restricts answer to catalog IDs and UI requires apply. However low probability is only checked for numeric validity, not gated or shown to users. Do not treat it as reliable confidence or enable automatic application.
+- **Research update:** current upstream docs describe `laya-ts` as an in-repository TypeScript/browser package, but its npm publication is still an open issue. The selected community Node service is distinct from the model's upstream repository. Keep the current pin until a measured, reproducible replacement is ready.
+- **Quality gate before rollout:** create reviewed character briefs; compare against deterministic rules and a simple majority baseline; keep a held-out set; report exact-match agreement, abstention, calibration, cold/warm latency, peak memory, install/cache size, and offline fallback. Upstream typed-decision results are not art-domain validation; base checkpoints score near chance, while 0.766 is the fine-tuned checkpoint on its benchmark's training split.
+
+Research references: [upstream README and runtime options](https://github.com/NandhaKishorM/laya), [upstream benchmark limits](https://github.com/NandhaKishorM/laya/blob/main/BENCHMARKS.md), [published/community TypeScript runtime](https://github.com/italoalmeida0/laya-system-one), and [open `laya-ts` npm publication issue](https://github.com/NandhaKishorM/laya/issues/288).

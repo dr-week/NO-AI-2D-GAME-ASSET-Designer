@@ -88,6 +88,8 @@ Owner: name
 | 0064 | [Laya integration verification](0064-laya-integration-verification.md) | Complete |
 | 0065 | [Landscape style catalog](0065-landscape-style-catalog.md) | Complete |
 | 0070 | [Local System 1 character decisions](0070-local-system-one-character-decisions.md) | Complete |
+| 0071 | [Laya design decision research](0071-laya-design-decision-research.md) | Complete |
+| 0074 | [Character design profile decisions](0074-character-design-profile-decisions.md) | Complete |
 
 Records 0001–0003 predate the numbered handoff format. Their notes are historical; use the
 task queue for current work and this index for completed change records.

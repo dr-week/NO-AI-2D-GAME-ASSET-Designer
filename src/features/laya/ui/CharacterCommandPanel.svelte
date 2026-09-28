@@ -3,6 +3,8 @@
   import { decideCharacterBrief } from '../model/localCharacterDecision.ts'
   import type { CharacterDecisionConfig } from '../model/characterDecision.ts'
   import { characterProfiles, type CharacterProfileId } from '../model/characterProfiles.ts'
+  import { suggestCharacterProfile } from '../io/systemOneClient.ts'
+  const canUseLocalModel = import.meta.env.DEV
 
   type Props = {
     onApply: (command: LayaCommand) => void
@@ -12,6 +14,8 @@
   let input = $state('')
   let brief = $state('')
   let selectedProfile = $state<CharacterProfileId>('balanced')
+  let modelSuggestion = $state<CharacterProfileId | null>(null)
+  let modelBusy = $state(false)
   let status = $state('Commands are checked locally against character limits.')
 
   function submit(event: SubmitEvent) {
@@ -35,7 +39,39 @@
     }
     onApplyDecision(result.config)
     const name = characterProfiles[result.profile].name
-    status = `${name} profile applied; ${result.matchedFeatures} explicit feature cues refined it.`
+    status = result.matchedOverall
+      ? `${name} profile applied with overall character sizing.`
+      : `${name} profile applied; ${result.matchedFeatures} explicit feature cues refined it.`
+  }
+
+  async function askLocalModel() {
+    modelBusy = true
+    modelSuggestion = null
+    status = 'Waiting for the optional local Laya runtime…'
+    const requestedBrief = brief
+    try {
+      const suggestion = await suggestCharacterProfile(requestedBrief)
+      if (brief !== requestedBrief) {
+        status = 'Brief changed while Laya was deciding. Request a new suggestion.'
+        return
+      }
+      modelSuggestion = suggestion
+      status = 'Laya suggested a body profile. Review it before applying.'
+    } catch (cause) {
+      status = cause instanceof Error
+        ? `${cause.message} Start the optional model with scripts/start-laya-system-one.ps1.`
+        : 'Local Laya could not decide; manual controls remain available.'
+    } finally {
+      modelBusy = false
+    }
+  }
+
+  function applyModelSuggestion() {
+    if (!modelSuggestion) return
+    selectedProfile = modelSuggestion
+    onApplyDecision(characterProfiles[modelSuggestion].config)
+    status = `${characterProfiles[modelSuggestion].name} suggestion applied. Review the character preview.`
+    modelSuggestion = null
   }
 </script>
 
@@ -54,10 +90,21 @@
       {/each}
     </select>
     <label for="laya-brief">Local System 1 quick design</label>
-    <textarea id="laya-brief" bind:value={brief} rows="2" placeholder="small head, broad torso, long arms"></textarea>
+    <textarea id="laya-brief" bind:value={brief} maxlength="500" rows="2" oninput={() => modelSuggestion = null} placeholder="small head, broad torso, long arms"></textarea>
     <button type="submit">Shape character from brief</button>
+    {#if canUseLocalModel}<button type="button" disabled={modelBusy} onclick={askLocalModel}>{modelBusy ? 'Deciding…' : 'Suggest with Laya'}</button>{/if}
   </form>
-  <small>Uses local proportion rules. Brief stays in this browser; no model or server is connected.</small>
+  {#if modelSuggestion}
+    <div class="suggestion" aria-label="Laya profile suggestion">
+      <strong>{characterProfiles[modelSuggestion].name}</strong>
+      <span>{characterProfiles[modelSuggestion].description}</span>
+      <div>
+        <button type="button" onclick={applyModelSuggestion}>Review in preview</button>
+        <button type="button" onclick={() => modelSuggestion = null}>Dismiss</button>
+      </div>
+    </div>
+  {/if}
+  <small>Rules work offline. Local Laya inference is development-only and downloads model weights on first use.</small>
   <p role="status" aria-live="polite">{status}</p>
   <details>
     <summary>Command examples</summary>
@@ -88,6 +135,9 @@
     input, textarea, select { min-width: 0; border: 1px solid var(--border); border-radius: 5px; }
     textarea { resize: vertical; }
     button { border: 1px solid var(--accent); border-radius: 5px; background: var(--surface); color: var(--accent); cursor: pointer; }
+    button:disabled { opacity: .6; cursor: wait; }
+    .suggestion { display: grid; gap: 6px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: .8125rem; }
+    .suggestion div { display: flex; gap: 8px; }
     p { margin: 0; font-size: .8125rem; color: var(--muted); }
     summary { min-height: 36px; padding-top: 8px; cursor: pointer; }
     ul { margin: 4px 0 0; padding-left: 20px; font-size: .8125rem; }

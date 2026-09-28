@@ -13,9 +13,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-export function resolveCharacterDecision(result: unknown): CharacterDecisionResult {
-  if (!isRecord(result) || !isRecord(result.answers)) return { ok: false, reason: 'Decision response is missing answers.' }
-
+export function characterConfigFromChoices(choices: Record<CharacterDecisionKey, CharacterDecisionValue>): CharacterDecisionConfig {
   const config: CharacterDecisionConfig = {
     proportions: { head: 1, torso: 1, arms: 1, legs: 1 },
     boneScales: { torso: 1, upperArm: 1, forearm: 1, thigh: 1, lowerLeg: 1 },
@@ -31,7 +29,16 @@ export function resolveCharacterDecision(result: unknown): CharacterDecisionResu
     thighLength: (scale) => config.boneScales.thigh = scale,
     lowerLegLength: (scale) => config.boneScales.lowerLeg = scale,
   }
+  for (const key of Object.keys(characterDecisionQuestions) as CharacterDecisionKey[]) {
+    mappings[key](characterDecisionValues[choices[key]])
+  }
+  return config
+}
 
+export function resolveCharacterDecision(result: unknown): CharacterDecisionResult {
+  if (!isRecord(result) || !isRecord(result.answers)) return { ok: false, reason: 'Decision response is missing answers.' }
+
+  const choices = {} as Record<CharacterDecisionKey, CharacterDecisionValue>
   let confidence = 1
   for (const key of Object.keys(characterDecisionQuestions) as CharacterDecisionKey[]) {
     const answer = result.answers[key]
@@ -46,8 +53,8 @@ export function resolveCharacterDecision(result: unknown): CharacterDecisionResu
       return { ok: false, reason: `Decision for ${key} is uncertain; keep manual controls.` }
     }
     confidence = Math.min(confidence, probability)
-    mappings[key](characterDecisionValues[answer.choice as CharacterDecisionValue])
+    choices[key] = answer.choice as CharacterDecisionValue
   }
 
-  return { ok: true, config, confidence }
+  return { ok: true, config: characterConfigFromChoices(choices), confidence }
 }

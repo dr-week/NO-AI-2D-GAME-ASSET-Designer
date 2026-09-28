@@ -112,6 +112,7 @@ Owner: name
 | 0088 | [Local SQLite backend foundation](0088-local-sqlite-backend-foundation.md) | Complete |
 | 0089 | [README product and research overview](0089-readme-product-and-research-overview.md) | Active |
 | 0090 | [Landscape template backend integration plan](0090-landscape-template-backend-integration-plan.md) | Active |
+| 0094 | [README visual identity and product guide](0094-readme-visual-identity-and-product-guide.md) | Complete |
 
 Records 0001–0003 predate the numbered handoff format. Their notes are historical; use the
 task queue for current work and this index for completed change records.

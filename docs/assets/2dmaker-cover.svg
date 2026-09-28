@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 440" role="img" aria-labelledby="title desc">
+  <title id="title">2D Maker — layered scenes, made editable</title>
+  <desc id="desc">A warm sun above overlapping indigo, teal, and coral landscape layers, with a simple geometric character.</desc>
+  <rect width="1440" height="440" rx="28" fill="#17233c"/>
+  <circle cx="1110" cy="126" r="72" fill="#ffd166"/>
+  <path d="M0 267c190-85 328-62 493 0s310 64 469-5 300-72 478-5v183H0Z" fill="#54b7a5"/>
+  <path d="M0 326c198-80 354-59 520 8s321 48 465-13 287-62 455-2v121H0Z" fill="#ed7966"/>
+  <path d="M0 365c177-50 314-40 467 9s324 53 507 0 301-47 466-8v74H0Z" fill="#6564a9"/>
+  <g transform="translate(235 158)">
+    <path d="M0 74 55 0l55 74v73H0Z" fill="#f7f2e8"/>
+    <path d="M55 0 110 74H55Z" fill="#ffd166"/>
+    <path d="M24 147h62l26 83H-2Z" fill="#f7f2e8"/>
+    <circle cx="40" cy="94" r="9" fill="#17233c"/>
+    <circle cx="73" cy="94" r="9" fill="#17233c"/>
+    <path d="M43 119q14 12 28 0" fill="none" stroke="#ed7966" stroke-width="6" stroke-linecap="round"/>
+    <path d="m20 231-8 26m73-26 8 26" stroke="#17233c" stroke-width="11" stroke-linecap="round"/>
+  </g>
+  <g fill="none" stroke="#f7f2e8" stroke-opacity=".7" stroke-width="3">
+    <path d="M948 268c67-27 137-27 204 0"/>
+    <path d="M922 287c83-31 168-31 251 0"/>
+    <path d="M1000 306c55-19 112-19 167 0"/>
+  </g>
+  <g fill="#f7f2e8" opacity=".75">
+    <circle cx="950" cy="124" r="5"/><circle cx="1274" cy="191" r="4"/>
+    <circle cx="850" cy="177" r="3"/><circle cx="1300" cy="92" r="3"/>
+  </g>
+</svg>

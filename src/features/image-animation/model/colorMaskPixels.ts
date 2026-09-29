@@ -35,13 +35,14 @@ export function applyColorMaskPixels(data: Uint8ClampedArray, width: number, hei
   if (data[seed + 3] < 8) throw new Error('Choose a visible color region.')
 
   const toleranceSquared = tolerance * tolerance
-  const visited = new Uint8Array(width * height)
   const queue = new Uint32Array(width * height)
   const seedR = data[seed], seedG = data[seed + 1], seedB = data[seed + 2]
+  for (let offset = 3; offset < data.length; offset += 4) data[offset] = data[offset] < 8 ? 0 : 8
   let head = 0, tail = 0
   const seedIndex = y * width + x
   queue[tail++] = seedIndex
-  visited[seedIndex] = 1
+  // Alpha 8 marks unvisited pixels; 1 marks checked and 2 marks matches. RGB stays intact.
+  data[seed + 3] = 2
 
   while (head < tail) {
     const index = queue[head++]
@@ -49,23 +50,23 @@ export function applyColorMaskPixels(data: Uint8ClampedArray, width: number, hei
     for (let direction = 0; direction < 4; direction++) {
       if ((direction === 0 && currentX === 0) || (direction === 1 && currentX === width - 1)) continue
       const next = direction === 0 ? index - 1 : direction === 1 ? index + 1 : direction === 2 ? index - width : index + width
-      if (next < 0 || next >= width * height || visited[next]) continue
-      visited[next] = 2
+      if (next < 0 || next >= width * height) continue
       const nextOffset = next * 4
-      if (data[nextOffset + 3] < 8) continue
+      if (data[nextOffset + 3] !== 8) continue
+      data[nextOffset + 3] = 1
       const red = data[nextOffset] - seedR
       const green = data[nextOffset + 1] - seedG
       const blue = data[nextOffset + 2] - seedB
       if (red * red + green * green + blue * blue <= toleranceSquared) {
-        visited[next] = 1
+        data[nextOffset + 3] = 2
         queue[tail++] = next
       }
     }
   }
 
-  for (let index = 0; index < visited.length; index++) {
+  for (let index = 0; index < width * height; index++) {
     const offset = index * 4
-    const value = visited[index] === 1 ? 255 : 0
+    const value = data[offset + 3] === 2 ? 255 : 0
     data[offset] = data[offset + 1] = data[offset + 2] = data[offset + 3] = value
   }
 }

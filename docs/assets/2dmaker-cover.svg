@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 460" role="img" aria-labelledby="title desc">
+  <title id="title">2D Maker — a small studio for big ideas</title>
+  <desc id="desc">Three flat-art panels show a character, a layered landscape, and a repeating geometric pattern.</desc>
+  <rect width="1440" height="460" rx="28" fill="#17233c"/>
+  <circle cx="128" cy="94" r="3" fill="#f7f2e8" opacity=".7"/>
+  <circle cx="1302" cy="74" r="4" fill="#f7f2e8" opacity=".7"/>
+  <circle cx="1371" cy="323" r="3" fill="#f7f2e8" opacity=".5"/>
+  <path d="M0 365c155-54 256-58 386-5s241 64 372 14 248-59 398-9 205 51 284 28v67H0Z" fill="#263b60"/>
+  <g transform="translate(142 50) rotate(-4 160 180)">
+    <rect width="294" height="348" rx="18" fill="#f7f2e8"/>
+    <rect x="12" y="12" width="270" height="324" rx="12" fill="#f4b7a8"/>
+    <circle cx="216" cy="87" r="38" fill="#ffd166"/>
+    <path d="M12 218q61-66 126 0t144-7v125H12Z" fill="#ed7966"/>
+    <path d="M12 269q83-58 146-7t124-9v83H12Z" fill="#6564a9"/>
+    <g transform="translate(78 134)">
+      <path d="M0 55 48 0l48 55v69H0Z" fill="#263b60"/>
+      <path d="m48 0 48 55H48Z" fill="#54b7a5"/>
+      <circle cx="34" cy="75" r="6" fill="#ffd166"/><circle cx="64" cy="75" r="6" fill="#ffd166"/>
+      <path d="M37 96q12 10 24 0" fill="none" stroke="#f7f2e8" stroke-width="4" stroke-linecap="round"/>
+      <path d="m20 124-4 20m55-20 4 20" stroke="#263b60" stroke-width="8" stroke-linecap="round"/>
+    </g>
+  </g>
+  <g transform="translate(570 50)">
+    <rect width="294" height="348" rx="18" fill="#f7f2e8"/>
+    <rect x="12" y="12" width="270" height="324" rx="12" fill="#54b7a5"/>
+    <circle cx="206" cy="96" r="39" fill="#ffd166"/>
+    <path d="M12 184 100 91l69 78 59-51 54 57v78H12Z" fill="#6564a9"/>
+    <path d="m12 226 73-74 70 77 65-59 62 34v132H12Z" fill="#ed7966"/>
+    <path d="M12 267q66-30 132 0t138 0v69H12Z" fill="#263b60"/>
+    <path d="M12 300q62-19 124 0t146 0" fill="none" stroke="#f7f2e8" stroke-width="4" opacity=".8"/>
+  </g>
+  <g transform="translate(998 50) rotate(4 147 174)">
+    <rect width="294" height="348" rx="18" fill="#f7f2e8"/>
+    <rect x="12" y="12" width="270" height="324" rx="12" fill="#263b60"/>
+    <g fill="#54b7a5">
+      <path d="M12 12h90v90H12zM192 12h90v90h-90zM102 102h90v90h-90zM12 192h90v90H12zM192 192h90v90h-90z"/>
+    </g>
+    <g fill="#ffd166">
+      <path d="M12 12h90L12 102zM192 12h90l-90 90zM102 102h90l-90 90zM12 192h90l-90 90zM192 192h90l-90 90z"/>
+    </g>
+    <g fill="#ed7966">
+      <circle cx="57" cy="57" r="15"/><circle cx="237" cy="57" r="15"/>
+      <circle cx="147" cy="147" r="15"/><circle cx="57" cy="237" r="15"/><circle cx="237" cy="237" r="15"/>
+    </g>
+  </g>
+  <g fill="#f7f2e8" opacity=".78">
+    <path d="M488 135v36m-18-18h36M920 271v26m-13-13h26M1330 149v32m-16-16h32" stroke="#f7f2e8" stroke-width="3"/>
+  </g>
+</svg>

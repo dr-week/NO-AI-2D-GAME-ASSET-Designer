@@ -4,6 +4,7 @@ export type JointId =
   | 'hipL' | 'kneeL' | 'ankleL' | 'hipR' | 'kneeR' | 'ankleR'
 
 export type Point = { x: number; y: number }
+export type CharacterPose = Partial<Record<JointId, number>>
 
 export type Joint = {
   parentId: JointId | null
@@ -17,6 +18,14 @@ export type Skeleton = {
   rootPosition: Point
   joints: Record<JointId, Joint>
 }
+
+export const poseJointControls = [
+  { id: 'spine', label: 'Spine' }, { id: 'neck', label: 'Neck' }, { id: 'head', label: 'Head' },
+  { id: 'shoulderL', label: 'Left shoulder' }, { id: 'elbowL', label: 'Left elbow' }, { id: 'wristL', label: 'Left wrist' },
+  { id: 'shoulderR', label: 'Right shoulder' }, { id: 'elbowR', label: 'Right elbow' }, { id: 'wristR', label: 'Right wrist' },
+  { id: 'hipL', label: 'Left hip' }, { id: 'kneeL', label: 'Left knee' }, { id: 'ankleL', label: 'Left ankle' },
+  { id: 'hipR', label: 'Right hip' }, { id: 'kneeR', label: 'Right knee' }, { id: 'ankleR', label: 'Right ankle' },
+] as const satisfies readonly { id: JointId; label: string }[]
 
 // Coordinates use SVG's y-down plane. Angles are radians from +x; positive turns clockwise.
 // Each non-root local angle rotates its bone relative to its parent's incoming bone.

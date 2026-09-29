@@ -18,13 +18,5 @@ workflow docs, and `research/animation-sdk-scan.md` before writing the compariso
   upstream docs/source trees change independently and should not be copied as a snapshot
   without a specific offline/audit requirement.
 
-## Implementation status
-
-Research only. Existing templates in `src/features/animation/themeEngine.ts` are data
-recipes and are not currently connected to character playback. Implementation should
-follow the phases in the research note and update requirements/UI status as each slice
-lands.
-
-## Checks
-
-Documentation-only change; application checks not run.
+Research record: [animation systems](../../research/animation-systems.md). Current behavior:
+[status](../status.md). Future adoption decisions: [technology register](../roadmap/technology-register.md).

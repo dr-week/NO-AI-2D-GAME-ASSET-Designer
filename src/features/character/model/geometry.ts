@@ -63,7 +63,7 @@ export function resolveSkeleton(skeleton: Skeleton, pose: Partial<Record<JointId
 }
 
 // Fits joint centers uniformly to a viewport. Padding also leaves room for the head outline.
-export function fitSkeleton(joints: ResolvedSkeleton, viewport: Viewport, padding = 90): FitTransform {
+export function fitSkeleton(joints: ResolvedSkeleton, viewport: Viewport, padding = 130): FitTransform {
   if (![viewport.width, viewport.height, padding].every(Number.isFinite) || viewport.width <= 0 || viewport.height <= 0 || padding < 0) {
     throw new Error('Viewport dimensions must be positive and padding cannot be negative.')
   }

@@ -1,17 +1,21 @@
 # UI-02 · Character
 
-Status: T-pose hierarchy, bone/joint visibility, joint pose sliders, and four bounded body-proportion controls implemented. Editable silhouettes, bone lengths, and clothing remain planned.
+Status: Front-facing rig, bounded controls, five body profiles, local brief rules, optional reviewable Laya suggestions, and transparent SVG export implemented. Silhouette drawing, asymmetrical rigging, and clothing remain planned.
 
 ## Purpose
 Build a front-facing character from connected shapes and a T-pose skeleton.
 
 ## Controls
-Show bones, show joints, reset T-pose, and reset proportions. Adjust head size and torso, arm, and leg width from 70% to 130%. Bone-length and joint-position editing remain planned.
+Select Balanced, Chibi, Heroic, Sturdy, or Slender body profile; refine it with explicit brief cues or an optional local Laya suggestion. Review model suggestions before applying. Manual controls remain available. Show bones/joints; pose or mirror joints; preview Breathe, Reach, or Wave; export SVG. Bone scales stay bounded at 70–130% and match left/right limbs.
 
 ## Flow
-Open the front-facing pose → adjust body widths and head size → pose supported joints
-or toggle bone/joint marks → reset pose or proportions.
+Open the front-facing rig → adjust shape widths or bone lengths → pose, randomize, or mirror joints → choose a clip and inspect key poses → set speed and preview/restart/scrub → export SVG or reset pose, widths, or lengths independently.
+
+Commands: `pose left elbow 45°`, `proportion head 110%`, `length upper arm 110%`,
+`reset pose`, `reset proportions`, or `reset lengths`. Angles and percentages outside model
+bounds are rejected.
 
 ## States
-Default pose, edited proportions, bones hidden, joints hidden. Proportions change shape
-widths only; bone lengths and detailed silhouette editing are not available.
+Default pose, adjusted shape widths/lengths, bones hidden, joints hidden. Length changes
+remain attached to the skeleton; detailed silhouette editing is not available. Invalid
+commands and values outside the supported ranges show an error without changing the rig.

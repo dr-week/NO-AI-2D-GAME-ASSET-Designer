@@ -2,13 +2,15 @@
   import { onDestroy } from 'svelte'
   import ImageCanvas from './ImageCanvas.svelte'
   import ImageLayerPanel from './ImageLayerPanel.svelte'
-  import { createColorMask } from '../model/imageMasks'
+  import { createColorMask, disposeColorMaskWorker } from '../model/imageMasks'
   import { loadImageFile } from '../io/imageFiles'
   import type { Layer, Motion, Point } from '../model/types'
-  import { animationTemplates, createMotionVariant, type AnimationThemeId } from '../../animation/themeEngine'
-  import { createImageProject, loadProjectImage, readImageProject } from '../io/projectFile'
+  import { animationTemplates, createTemplateMotion } from '../../animation/themeEngine'
+  import { createImageProject, loadProjectImage, readImageProject, type ImageProject } from '../io/projectFile'
   import { readProjectLocally, saveProjectLocally } from '../io/projectStore'
   import { exportAnimatedSvg } from '../io/svgExport'
+  import { canAddLayer, createImageLayer, createTextLayer as makeTextLayer } from '../model/layers'
+  import { downloadBlob } from '../../../platform/download'
 
   let imageUrl = $state('')
   let imageWidth = $state(0)
@@ -23,13 +25,14 @@
   let backgroundMotion = $state<Motion>('still')
   let maskMode = $state<'polygon' | 'color'>('polygon')
   let colorTolerance = $state(32)
+  let maskBusy = $state(false)
   let sourceImage: HTMLImageElement | null = null
   let imageLoadVersion = 0
+  let maskRequestVersion = 0
   let projectStatus = $state('')
   let projectError = $state('')
   let hasLocalProject = $state(false)
   let selectedTemplateId = $state('breathe')
-  let themeId = $state<AnimationThemeId>('soft')
   let restoreChecked = false
 
   const selectedLayer = $derived(layers.find((layer) => layer.id === selectedId))
@@ -39,6 +42,10 @@
     const input = event.currentTarget as HTMLInputElement
     const file = input.files?.[0]
     if (!file) return
+    maskRequestVersion++
+    disposeColorMaskWorker()
+    maskBusy = false
+    projectStatus = ''
     const request = ++imageLoadVersion
     try {
       const loaded = await loadImageFile(file)
@@ -60,14 +67,27 @@
     } finally { input.value = '' }
   }
 
-  function addPoint(point: Point) {
+  async function addPoint(point: Point) {
     if (maskMode === 'color') {
-      if (!sourceImage) return
+      if (!sourceImage || maskBusy) return
+      const request = ++maskRequestVersion
+      maskBusy = true
+      projectStatus = 'Creating color mask…'
       try {
-        draftMaskUrl = createColorMask(sourceImage, point, colorTolerance)
+        const maskUrl = await createColorMask(sourceImage, point, colorTolerance)
+        if (request !== maskRequestVersion) return
+        draftMaskUrl = maskUrl
         draft = []
+        projectStatus = 'Color mask ready. Create a layer to keep it.'
         error = ''
-      } catch (cause) { error = cause instanceof Error ? cause.message : 'Could not create color mask.' }
+      } catch (cause) {
+        if (request === maskRequestVersion) {
+          projectStatus = ''
+          error = cause instanceof Error ? cause.message : 'Could not create color mask.'
+        }
+      } finally {
+        if (request === maskRequestVersion) maskBusy = false
+      }
       return
     }
     if (draft.length >= 200) { error = 'A polygon mask can contain up to 200 points.'; return }
@@ -77,9 +97,9 @@
 
   function createLayer() {
     if (draft.length < 3 && !draftMaskUrl) return
-    if (layers.length >= 32) { error = 'An image can contain up to 32 layers.'; return }
+    if (!canAddLayer(layers)) { error = 'An image can contain up to 32 layers.'; return }
     const id = crypto.randomUUID()
-    layers = [...layers, { id, name: layerName.trim() || 'Untitled layer', points: draft, maskUrl: draftMaskUrl, motion: 'still', duration: 3, kind: 'image' }]
+    layers = [...layers, createImageLayer(id, layerName, draft, draftMaskUrl)]
     selectedId = id
     layerName = 'New layer'
     draft = []
@@ -87,18 +107,19 @@
   }
 
   function createTextLayer(text: string, fill: string, fontSize: number) {
-    if (!imageUrl || !text.trim() || text.length > 500 || !/^#[\da-fA-F]{6}$/.test(fill) || !Number.isFinite(fontSize) || fontSize < 8 || fontSize > 400) return
-    if (layers.length >= 32) { error = 'An image can contain up to 32 layers.'; return }
-    const cleanText = text.trim()
+    if (!imageUrl) return
+    if (!canAddLayer(layers)) { error = 'An image can contain up to 32 layers.'; return }
     const id = crypto.randomUUID()
-    layers = [...layers, { id, name: cleanText.slice(0, 40), points: [], maskUrl: '', motion: 'rise', duration: 0.35, kind: 'text', text: cleanText, x: imageWidth / 2, y: imageHeight / 2, fontSize, fill }]
+    const layer = makeTextLayer(id, text, fill, fontSize, imageWidth, imageHeight)
+    if (!layer) return
+    layers = [...layers, layer]
     selectedId = id
     error = ''
   }
 
   function randomAnimation() {
     const templates = Object.values(animationTemplates)
-    const randomVariant = () => createMotionVariant(templates[Math.floor(Math.random() * templates.length)], crypto.getRandomValues(new Uint32Array(1))[0], themeId)
+    const randomVariant = () => createTemplateMotion(templates[Math.floor(Math.random() * templates.length)], crypto.getRandomValues(new Uint32Array(1))[0])
     backgroundMotion = randomVariant().motion
     layers = layers.map((layer) => { const variant = randomVariant(); return { ...layer, motion: variant.motion, duration: variant.duration } })
   }
@@ -107,7 +128,15 @@
     layers = layers.map((layer) => layer.id === id ? { ...layer, ...changes } : layer)
   }
 
-  function clearDraft() { draft = []; draftMaskUrl = ''; error = '' }
+  function clearDraft() {
+    maskRequestVersion++
+    disposeColorMaskWorker()
+    maskBusy = false
+    draft = []
+    draftMaskUrl = ''
+    if (projectStatus === 'Creating color mask…') projectStatus = ''
+    error = ''
+  }
   function removeSelectedLayer() { layers = layers.filter((layer) => layer.id !== selectedId); selectedId = '' }
 
   function sourceAsDataUrl(): string {
@@ -122,12 +151,8 @@
   }
 
   function downloadProject(project: ReturnType<typeof createImageProject>) {
-    const url = URL.createObjectURL(new Blob([JSON.stringify(project)], { type: 'application/json' }))
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = `${fileName.replace(/\.[^.]+$/, '') || '2dmaker-project'}.2dmaker.json`
-    anchor.click()
-    URL.revokeObjectURL(url)
+    const blob = new Blob([JSON.stringify(project)], { type: 'application/json' })
+    downloadBlob(blob, `${fileName.replace(/\.[^.]+$/, '') || '2dmaker-project'}.2dmaker.json`)
   }
 
   function saveProject() {
@@ -140,30 +165,37 @@
     } catch (cause) { projectError = cause instanceof Error ? cause.message : 'Could not save project.' }
   }
 
+  async function installProject(project: ImageProject, status: string) {
+    const restoredUrl = await loadProjectImage(project.imageDataUrl, project.width, project.height)
+    const restoredImage = new Image()
+    restoredImage.src = restoredUrl
+    await restoredImage.decode()
+    maskRequestVersion++
+    disposeColorMaskWorker()
+    maskBusy = false
+    if (imageUrl.startsWith('blob:')) URL.revokeObjectURL(imageUrl)
+    imageUrl = restoredUrl
+    sourceImage = restoredImage
+    imageWidth = project.width
+    imageHeight = project.height
+    fileName = project.fileName
+    backgroundMotion = project.backgroundMotion
+    layers = project.layers
+    selectedId = ''
+    draft = []
+    draftMaskUrl = ''
+    projectStatus = status
+    projectError = ''
+    error = ''
+  }
+
   async function openProject(event: Event) {
     const input = event.currentTarget as HTMLInputElement
     const file = input.files?.[0]
     if (!file) return
     try {
       const project = await readImageProject(file)
-      const restoredUrl = await loadProjectImage(project.imageDataUrl, project.width, project.height)
-      const restoredImage = new Image()
-      restoredImage.src = restoredUrl
-      await restoredImage.decode()
-      if (imageUrl.startsWith('blob:')) URL.revokeObjectURL(imageUrl)
-      imageUrl = restoredUrl
-      sourceImage = restoredImage
-      imageWidth = project.width
-      imageHeight = project.height
-      fileName = project.fileName
-      backgroundMotion = project.backgroundMotion
-      layers = project.layers
-      selectedId = ''
-      draft = []
-      draftMaskUrl = ''
-      projectError = ''
-      projectStatus = `Opened ${file.name}.`
-      error = ''
+      await installProject(project, `Opened ${file.name}.`)
     } catch (cause) { projectError = cause instanceof Error ? cause.message : 'Could not open project.' }
     finally { input.value = '' }
   }
@@ -172,21 +204,7 @@
     const project = readProjectLocally()
     if (!project) { hasLocalProject = false; projectStatus = 'No valid browser-saved project was found.'; return }
     try {
-      const restoredUrl = await loadProjectImage(project.imageDataUrl, project.width, project.height)
-      const restoredImage = new Image()
-      restoredImage.src = restoredUrl
-      await restoredImage.decode()
-      if (imageUrl.startsWith('blob:')) URL.revokeObjectURL(imageUrl)
-      imageUrl = restoredUrl
-      sourceImage = restoredImage
-      imageWidth = project.width
-      imageHeight = project.height
-      fileName = project.fileName
-      backgroundMotion = project.backgroundMotion
-      layers = project.layers
-      selectedId = ''
-      projectStatus = 'Restored project from this browser.'
-      projectError = ''
+      await installProject(project, 'Restored project from this browser.')
     } catch (cause) { projectError = cause instanceof Error ? cause.message : 'Could not restore browser project.' }
   }
 
@@ -200,7 +218,7 @@
 
   function applyTemplate() {
     if (!selectedLayer) return
-    const variant = createMotionVariant(selectedTemplate, crypto.getRandomValues(new Uint32Array(1))[0], themeId)
+    const variant = createTemplateMotion(selectedTemplate, crypto.getRandomValues(new Uint32Array(1))[0])
     updateLayer(selectedLayer.id, { motion: variant.motion, duration: variant.duration })
   }
 
@@ -215,11 +233,13 @@
 
   onDestroy(() => {
     imageLoadVersion++
+    maskRequestVersion++
+    disposeColorMaskWorker()
     if (imageUrl) URL.revokeObjectURL(imageUrl)
   })
 </script>
 
-<section class="image-editor" aria-label="Image animation workspace">
+<section class="image-editor" aria-label="Animation workspace">
   <ImageLayerPanel
     {imageUrl} {fileName} width={imageWidth} height={imageHeight} {error} {draft} {draftMaskUrl} {layerName} {layers}
     {selectedLayer} {backgroundMotion} {maskMode} {colorTolerance} {projectStatus} {projectError} {selectedTemplateId} {hasLocalProject}
@@ -228,7 +248,7 @@
     onBackgroundMotionChange={(motion) => backgroundMotion = motion}
     onLayerNameChange={(name) => layerName = name}
     onMaskModeChange={(mode) => { maskMode = mode; clearDraft() }}
-    onToleranceChange={(value) => colorTolerance = value}
+    onToleranceChange={(value) => { maskRequestVersion++; disposeColorMaskWorker(); maskBusy = false; if (projectStatus === 'Creating color mask…') projectStatus = ''; colorTolerance = value }}
     onClearDraft={clearDraft}
     onCreateLayer={createLayer}
     onCreateTextLayer={createTextLayer}
@@ -253,11 +273,11 @@
 </section>
 
 <style lang="scss">
-  .image-editor { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 20px; max-width: 1600px; margin: 0 auto; padding: 24px; }
-  .image-stage { display: grid; justify-items: center; align-content: center; gap: 8px; min-width: 0; min-height: 70svh; padding: 20px; background-color: #fff; background-image: conic-gradient(#e9edf3 25%, transparent 0 50%, #e9edf3 0 75%, transparent 0); background-size: 20px 20px; border: 1px solid var(--border); border-radius: 8px; }
+  .image-editor { display: grid; grid-template-columns: minmax(270px, 310px) minmax(0, 1fr); gap: 18px; max-width: 1640px; margin: 0 auto; padding: 20px 24px 28px; }
+  .image-stage { display: grid; justify-items: center; align-content: center; gap: 10px; min-width: 0; min-height: min(78svh, 860px); padding: clamp(14px, 2vw, 26px); background-color: var(--surface-raised); background-image: conic-gradient(#e6e1d7 25%, transparent 0 50%, #e6e1d7 0 75%, transparent 0); background-size: 18px 18px; border: 1px solid var(--border); border-radius: 15px; box-shadow: var(--shadow); }
   .empty-stage { background: var(--surface); }
-  .empty-prompt { display: grid; gap: 8px; justify-items: center; color: var(--muted); }
-  .empty-prompt strong { color: var(--text); }
-  .stage-hint { margin: 0; color: var(--muted); font-size: .8125rem; }
-  @media (max-width: 800px) { .image-editor { grid-template-columns: minmax(0, 1fr); padding: 16px; } .image-stage { min-height: 45svh; } }
+  .empty-prompt { display: grid; gap: 7px; justify-items: center; color: var(--muted); font-size: .8rem; }
+  .empty-prompt strong { color: var(--text); font-size: .95rem; font-weight: 550; }
+  .stage-hint { margin: 0; color: var(--muted); font-size: .72rem; }
+  @media (max-width: 800px) { .image-editor { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 14px; } .image-stage { min-height: 50svh; } }
 </style>

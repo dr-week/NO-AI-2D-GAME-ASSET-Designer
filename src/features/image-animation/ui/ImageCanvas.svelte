@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getMaskCenter } from '../model/maskGeometry'
   import type { Layer, Motion, Point } from '../model/types'
-  import { motionStyle } from '../../animation/themeEngine'
+  import { backgroundMotionDuration, motionStyle } from '../../animation/themeEngine'
 
   type Props = {
     imageUrl: string
@@ -48,27 +48,31 @@
 <button class="image-canvas" type="button" aria-label="Image mask canvas. Click or use arrow keys to position, then press Enter to add a point." onpointerdown={addPointerPoint} onkeydown={moveCursor}>
   <svg bind:this={canvasElement} viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Imported image and selected animation layers">
     <defs>
-      {#each layers.filter((layer) => layer.kind !== 'text' && !layer.maskUrl) as layer (layer.id)}
-        <clipPath id={`clip-${layer.id}`} clipPathUnits="userSpaceOnUse">
-          <polygon points={layer.points.map((point) => `${point.x},${point.y}`).join(' ')} />
-        </clipPath>
+      {#each layers as layer (layer.id)}
+        {#if layer.kind === 'image' && !layer.maskUrl}
+          <clipPath id={`clip-${layer.id}`} clipPathUnits="userSpaceOnUse">
+            <polygon points={layer.points.map((point) => `${point.x},${point.y}`).join(' ')} />
+          </clipPath>
+        {/if}
       {/each}
-      {#each layers.filter((layer) => layer.kind !== 'text' && layer.maskUrl) as layer (layer.id)}
-        <mask id={`mask-${layer.id}`} maskUnits="userSpaceOnUse" x="0" y="0" width={width} height={height}>
-          <image href={layer.maskUrl} width={width} height={height} />
-        </mask>
+      {#each layers as layer (layer.id)}
+        {#if layer.kind === 'image' && layer.maskUrl}
+          <mask id={`mask-${layer.id}`} maskUnits="userSpaceOnUse" x="0" y="0" width={width} height={height}>
+            <image href={layer.maskUrl} width={width} height={height} />
+          </mask>
+        {/if}
       {/each}
     </defs>
     <g transform={`translate(${width / 2} ${height / 2})`}>
-      <g class={`motion-effect motion-${backgroundMotion}`} style={motionStyle(backgroundMotion, 8)}>
+      <g class={`motion-effect motion-${backgroundMotion}`} style={motionStyle(backgroundMotion, backgroundMotionDuration)}>
         <g transform={`translate(${-width / 2} ${-height / 2})`}><image href={imageUrl} width={width} height={height} /></g>
       </g>
     </g>
     {#each layers as layer (layer.id)}
       {#if layer.kind === 'text'}
-        <g transform={`translate(${layer.x ?? width / 2} ${layer.y ?? height / 2})`}>
+        <g transform={`translate(${layer.x} ${layer.y})`}>
           <g class={`motion-effect motion-${layer.motion}`} style={motionStyle(layer.motion, layer.duration)}>
-            <text x="0" y="0" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, sans-serif" font-size={layer.fontSize ?? 64} fill={layer.fill ?? '#283247'}>{layer.text}</text>
+          <text x="0" y="0" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, sans-serif" font-size={layer.fontSize} fill={layer.fill}>{layer.text}</text>
           </g>
         </g>
       {:else}
@@ -98,7 +102,7 @@
   .selection { fill: #5269c922; stroke: #5269c9; stroke-width: 4; stroke-dasharray: 8 5; }
   .selection-point { fill: white; stroke: #5269c9; stroke-width: 2; }
   .keyboard-cursor { fill: #ffdf66aa; stroke: #302800; stroke-width: 3; pointer-events: none; }
-  .motion-effect { transform-box: view-box; transform-origin: 0 0; animation: layer-motion var(--cycle) cubic-bezier(.2, 0, 0, 1) var(--motion-iterations) var(--motion-direction) both; }
+  .motion-effect { transform-box: view-box; transform-origin: 0 0; animation: layer-motion var(--cycle) var(--motion-easing) var(--motion-iterations) var(--motion-direction) both; }
   @keyframes layer-motion { from { transform: var(--motion-from); opacity: var(--opacity-from); } to { transform: var(--motion-to); opacity: var(--opacity-to); } }
   @media (prefers-reduced-motion: reduce) { .motion-effect { animation: none; } }
 </style>

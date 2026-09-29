@@ -12,6 +12,9 @@ These are design nodes, not a runtime node graph.
 | UI-04 | [04-animation](04-animation/script.md) | Poses and timeline |
 | UI-05 | [05-project](05-project/script.md) | Save, load, export |
 | UI-06 | [06-image-animation](06-image-animation/script.md) | Image layers and motion |
+| UI-07 | [07-landscape](07-landscape/script.md) | Landscape recipes and local template library |
+| REF-01 | [workflow-groups.md](workflow-groups.md) | Two-stage workflow and section grouping proposal |
+| UI-08 | [08-structure-feedback](08-structure-feedback/script.md) | Navigation, animation categories, and feedback improvements |
 
 ## Format
 

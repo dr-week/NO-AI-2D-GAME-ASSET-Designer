@@ -34,6 +34,7 @@ your control.
 | ✳ **Character** | Front-facing character art | Bounded proportions and joints · five profiles · Wave preview · SVG export |
 | ◒ **Landscape** | Layered scene compositions | Seeded SVG scenes · landform and lighting controls · styles · saved recipes |
 | ↗ **Image + motion** | Animated illustrations | Image and text layers · masks · motion previews · project files · SVG export |
+| ▦ **Tile backgrounds** | Seamless decorative patterns | Seeded motifs · px/mm sizing · repeat preview · single-tile and proof-sheet SVG |
 | ◇ **3D artwork** | Starter forms and compositions | Five primitive groups · orbit camera · two projections · PNG preview |
 
 These are focused creation tools, not a full illustration suite or timeline editor. See [current
@@ -55,11 +56,12 @@ flowchart LR
   Laya -. reviewed catalog choice .-> Studio
 ```
 
-The app runs in the browser without a hosted backend. An optional loopback Node service provides
-SQLite template routes; the landscape editor is still on IndexedDB while migration and offline
-fallback are completed. Laya runs separately and is available through the development proxy.
-Feature rules, storage adapters, renderers, and export have separate owners. See [architecture and
-data flow](docs/design.md) and [backend boundaries](research/backend-architecture.md).
+The app runs in the browser without a hosted backend. An optional loopback Node service stores
+landscape templates in SQLite, with IndexedDB migration, offline cache, and queued edits. Laya runs
+separately through the development proxy. **Each distinct kind of work owns a feature module and
+a labeled drawer section.** Keep its UI, rules, IO, and rendering together; share behavior only
+when multiple features need the same contract. See [architecture and data flow](docs/design.md) and
+[backend boundaries](research/backend-architecture.md).
 
 ## Technology
 
@@ -70,7 +72,7 @@ data flow](docs/design.md) and [backend boundaries](research/backend-architectur
 | 2D | SVG, Canvas 2D, CSS animation, typed motion recipes |
 | Image processing | TypeScript Web Worker with native synchronous fallback |
 | 3D | Lazy-loaded Three.js and WebGL |
-| Local persistence | IndexedDB and bounded browser recovery; optional Node `node:sqlite` service |
+| Local persistence | IndexedDB and bounded browser recovery; optional loopback Node `node:sqlite` service |
 | Verification | `svelte-check`, TypeScript, Node test runner, production build |
 
 The browser build does not bundle model weights or call a hosted AI API. Exact dependency versions
@@ -110,6 +112,7 @@ src/
   features/
     character/                 geometry, proportions, posing, SVG export
     landscape/                 seeded scenes, styles, templates, storage
+    procedural-background/    seamless SVG tile recipes, preview, and export
     image-animation/           image/text layers, masks, motion, project IO
     animation/                 shared motion definitions and recipes
     laya/                      bounded decisions and optional service adapter
@@ -139,10 +142,53 @@ Useful references: [project status](docs/status.md) · [task queue](docs/tasks/R
 [UI flows](docs/ui-ux/README.md) · [technology register](docs/roadmap/technology-register.md) ·
 [System 1 architecture](research/laya-integration.md) · [research index](research/stack-and-architecture.md).
 
-## Research notes
+## What we learn from other tools
 
-Rive, Lottie, Synfig, and Blender Grease Pencil each demonstrate different parts of the 2D motion
-workflow. 2D Maker focuses on local, deterministic starter art and editable SVG-oriented scenes.
+Each product solves a different part of the art workflow. These are design references, not claims
+of feature parity or promises to reproduce their full toolsets.
+
+| Tool | Marquee strength | Useful comparison for 2D Maker |
+|:--|:--|:--|
+| [Rive](https://rive.app/docs/auth) | Interactive vector animation driven by state machines and runtimes | Keep motion understandable and previewable; 2D Maker has simple clips, not interactive state machines. |
+| [Synfig](https://wiki.synfig.org/Features) | Layered vector animation with keyframes and interpolation | A reference for future bounded clips and timing controls; an editable timeline remains later work. |
+| [OpenToonz](https://opentoonz.readthedocs.io/en/latest/working_in_xsheet.html) | Xsheet/timeline organizes layers across frames | Treat a future timeline as its own focused animation tool, separate from artwork-creation controls. |
+| [Blender Grease Pencil](https://docs.blender.org/manual/en/latest/grease_pencil/) | Frame animation, editable layers, masks, and drawing inside 3D scenes | Keep character, layer, and 3D scene workflows distinct; do not force every workflow into one crowded editor. |
+| [Lottie](https://developers.lottiefiles.com/) | Portable JSON animation format with platform runtimes | Compare export formats carefully; 2D Maker currently exports animated SVG and does not write Lottie files. |
+
+Detailed architecture notes and sources: [animation systems](research/animation-systems.md).
+
+## Feature roadmap, in separate slices
+
+These are scoped directions from the [requirements](docs/requirements.md) and
+[task queue](docs/tasks/README.md), not a release schedule. Each independently usable feature gets
+its own module and focused drawer entry; steps within that feature stay grouped in its workspace.
+
+### Character motion
+
+**Now:** bounded posing and a Wave preview. **Next:** additional bounded clips and editable
+timing; add a timeline only when playback needs justify it. No state-machine runtime is required.
+
+### Layered illustration
+
+**Now:** image/text layers, masks, motion preview, and animated SVG export. **Next:** editable
+paths and mask correction as separate tasks; frame-sequence export follows when prioritized.
+
+### Landscapes
+
+**Now:** seeded landscape scenes, style controls, and saved recipes. **Next:** reviewed scene
+profiles, editable layers, and wave motion as independently scoped additions.
+
+### Tile backgrounds
+
+**Now:** a separate seeded SVG tile maker with unit-aware sizing, density/color controls, repeat
+preview, and single-tile or proof-sheet export. **Next:** raster formats and print profiles, after
+production requirements are defined.
+
+### 3D artwork
+
+**Now:** procedural starter forms, camera views, and PNG preview. **Possible next slices:** object
+transforms, scene save/restore, and model import. Keep this workspace separate from 2D drawing.
+
 Potential users and paid workflows remain hypotheses; no market-size or willingness-to-pay study
 has been completed.
 

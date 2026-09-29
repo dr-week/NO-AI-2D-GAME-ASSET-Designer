@@ -114,6 +114,7 @@ Owner: name
 | 0090 | [Landscape template backend integration plan](0090-landscape-template-backend-integration-plan.md) | Active |
 | 0094 | [README visual identity and product guide](0094-readme-visual-identity-and-product-guide.md) | Complete |
 | 0100 | [README artistic showcase and contributor onboarding](0100-readme-artistic-showcase-and-contributor-onboarding.md) | Complete |
+| 0103 | [README software comparison and feature roadmap](0103-readme-software-comparison-and-feature-roadmap.md) | Complete |
 
 Records 0001–0003 predate the numbered handoff format. Their notes are historical; use the
 task queue for current work and this index for completed change records.

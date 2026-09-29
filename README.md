@@ -6,7 +6,7 @@
 
 ### Make a scene. Shape a character. Bring it to life.
 
-**A local-first studio for editable 2D artwork, motion graphics, and starter 3D scenes.**
+**A local-first art studio for editable 2D scenes, character motion, and starter 3D worlds.**
 
 [![Svelte 5](https://img.shields.io/badge/Svelte-5-FF3E00?logo=svelte&logoColor=white)](https://svelte.dev/)
 [![TypeScript 6](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -19,19 +19,22 @@
 
 ---
 
-2D Maker turns compact design rules into editable starting points. Build with SVG, Canvas,
+2D Maker turns clear design rules into art you can shape yourself. Build with SVG, Canvas,
 browser APIs, and seeded procedural systems. **No LLM or hosted generation service is required.**
-Optional local Laya suggestions only choose from existing catalogs; you review and apply every
-suggestion yourself.
+Optional local Laya suggestions choose only from existing catalogs; every suggestion stays under
+your control.
+
+> **Small tools. Clear layers. Art you can edit.** 2D Maker keeps creation local, visual, and
+> understandable—from the first shape to the exported scene.
 
 ## The studio
 
 | Workspace | Create | Available today |
 |:--|:--|:--|
-| **Character** | Front-facing character art | Bounded body proportions and joints, five profiles, Wave preview, SVG export |
-| **Landscape** | Layered scene compositions | Seeded SVG landscapes, landform and lighting controls, styles, saved recipes |
-| **Image + motion** | Simple animated illustrations | Image and text layers, masks, motion previews, project files, animated SVG export |
-| **3D artwork** | Starter forms and compositions | Five primitive groups, orbit camera, perspective and orthographic views, PNG preview |
+| ✳ **Character** | Front-facing character art | Bounded proportions and joints · five profiles · Wave preview · SVG export |
+| ◒ **Landscape** | Layered scene compositions | Seeded SVG scenes · landform and lighting controls · styles · saved recipes |
+| ↗ **Image + motion** | Animated illustrations | Image and text layers · masks · motion previews · project files · SVG export |
+| ◇ **3D artwork** | Starter forms and compositions | Five primitive groups · orbit camera · two projections · PNG preview |
 
 These are focused creation tools, not a full illustration suite or timeline editor. See [current
 status](docs/status.md), [requirements](docs/requirements.md), and [known issues](docs/issues.md)
@@ -120,10 +123,17 @@ research/                      design and technology evidence
 
 ## Contribute
 
-Start with [the contribution guide](docs/contributing.md). Read the feature docs, check active
-file ownership, reuse existing helpers, and record the files and checks in the
-[contribution log](docs/contributions/README.md). Keep changes focused and document behavior where
-it lives.
+Good contributions here are focused, visual, and easy to review. Add one scene rule, improve one
+workflow, fix one export edge case, or make one piece of documentation clearer.
+
+1. [Run the app](#get-started) and explore a workspace.
+2. Choose a bounded item from the [task queue](docs/tasks/README.md), or open an
+   [issue](https://github.com/dr-week/NO-AI-2D-GAME-ASSET-Designer/issues).
+3. Read [the contribution guide](docs/contributing.md), check active file ownership in the
+   [contribution log](docs/contributions/README.md), and keep your change small.
+
+No special art pipeline or hosted AI account is needed. Clear TypeScript, repeatable output, and a
+short handoff make a strong first contribution.
 
 Useful references: [project status](docs/status.md) · [task queue](docs/tasks/README.md) ·
 [UI flows](docs/ui-ux/README.md) · [technology register](docs/roadmap/technology-register.md) ·
